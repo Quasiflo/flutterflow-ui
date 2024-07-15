@@ -1,17 +1,25 @@
+// ignore_for_file: prefer_asserts_with_message
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
-import '../utils/form_field_controller.dart';
+import 'package:flutterflow_ui/src/utils/form_field_controller.dart';
 
 /// A dropdown widget that allows the user to select an option from a list of options.
 class FlutterFlowDropDown<T> extends StatefulWidget {
   const FlutterFlowDropDown({
+    required this.options,
+    required this.textStyle,
+    required this.elevation,
+    required this.borderWidth,
+    required this.borderRadius,
+    required this.borderColor,
+    required this.margin,
     super.key,
     this.controller,
     this.multiSelectController,
     this.hintText,
     this.searchHintText,
-    required this.options,
     this.optionLabels,
     this.onChanged,
     this.onMultiSelectChanged,
@@ -23,12 +31,6 @@ class FlutterFlowDropDown<T> extends StatefulWidget {
     this.searchHintTextStyle,
     this.searchTextStyle,
     this.searchCursorColor,
-    required this.textStyle,
-    required this.elevation,
-    required this.borderWidth,
-    required this.borderRadius,
-    required this.borderColor,
-    required this.margin,
     this.hidesUnderline = false,
     this.disabled = false,
     this.isOverButton = false,
@@ -68,10 +70,10 @@ class FlutterFlowDropDown<T> extends StatefulWidget {
   final List<String>? optionLabels;
 
   /// A callback function that is called when the selected option changes.
-  final Function(T?)? onChanged;
+  final void Function(T?)? onChanged;
 
   /// A callback function that is called when the selected options change in multi-select mode.
-  final Function(List<T>?)? onMultiSelectChanged;
+  final void Function(List<T>?)? onMultiSelectChanged;
 
   /// The icon to display in the dropdown field.
   final Widget? icon;
@@ -167,7 +169,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
 
   Map<T, String> get optionLabels => Map.fromEntries(
         widget.options.asMap().entries.map(
-              (option) => MapEntry(
+              (final option) => MapEntry(
                 option.value,
                 widget.optionLabels == null ||
                         widget.optionLabels!.length < option.key + 1
@@ -209,7 +211,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final dropdownWidget = _buildDropdownWidget();
     return SizedBox(
       width: widget.width,
@@ -242,28 +244,27 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
   Widget _buildDropdownWidget() =>
       _useDropdown2() ? _buildDropdown() : _buildLegacyDropdown();
 
-  Widget _buildLegacyDropdown() {
-    return DropdownButtonFormField<T>(
-      value: currentValue,
-      hint: _createHintText(),
-      items: _createMenuItems(),
-      elevation: widget.elevation.toInt(),
-      onChanged: widget.disabled ? null : (value) => controller.value = value,
-      icon: widget.icon,
-      isExpanded: true,
-      dropdownColor: widget.fillColor,
-      focusColor: Colors.transparent,
-      decoration: InputDecoration(
-        labelText: widget.labelText == null || widget.labelText!.isEmpty
-            ? null
-            : widget.labelText,
-        labelStyle: widget.labelTextStyle,
-        border: widget.hidesUnderline
-            ? InputBorder.none
-            : const UnderlineInputBorder(),
-      ),
-    );
-  }
+  Widget _buildLegacyDropdown() => DropdownButtonFormField<T>(
+        value: currentValue,
+        hint: _createHintText(),
+        items: _createMenuItems(),
+        elevation: widget.elevation.toInt(),
+        onChanged:
+            widget.disabled ? null : (final value) => controller.value = value,
+        icon: widget.icon,
+        isExpanded: true,
+        dropdownColor: widget.fillColor,
+        focusColor: Colors.transparent,
+        decoration: InputDecoration(
+          labelText: widget.labelText == null || widget.labelText!.isEmpty
+              ? null
+              : widget.labelText,
+          labelStyle: widget.labelTextStyle,
+          border: widget.hidesUnderline
+              ? InputBorder.none
+              : const UnderlineInputBorder(),
+        ),
+      );
 
   Text? _createHintText() => widget.hintText != null
       ? Text(widget.hintText!, style: widget.textStyle)
@@ -271,7 +272,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
 
   List<DropdownMenuItem<T>> _createMenuItems() => widget.options
       .map(
-        (option) => DropdownMenuItem<T>(
+        (final option) => DropdownMenuItem<T>(
           value: option,
           child: Padding(
             padding: _useDropdown2() ? horizontalMargin : EdgeInsets.zero,
@@ -283,12 +284,12 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
 
   List<DropdownMenuItem<T>> _createMultiselectMenuItems() => widget.options
       .map(
-        (item) => DropdownMenuItem<T>(
+        (final item) => DropdownMenuItem<T>(
           value: item,
           // Disable default onTap to avoid closing menu when selecting an item
           enabled: false,
           child: StatefulBuilder(
-            builder: (context, menuSetState) {
+            builder: (final context, final menuSetState) {
               final isSelected =
                   multiSelectController.value?.contains(item) ?? false;
               return InkWell(
@@ -330,8 +331,10 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       .toList();
 
   Widget _buildDropdown() {
-    final overlayColor = WidgetStateProperty.resolveWith<Color?>((states) =>
-        states.contains(WidgetState.focused) ? Colors.transparent : null);
+    final overlayColor = WidgetStateProperty.resolveWith<Color?>(
+      (final states) =>
+          states.contains(WidgetState.focused) ? Colors.transparent : null,
+    );
     final iconStyleData = widget.icon != null
         ? IconStyleData(icon: widget.icon!)
         : const IconStyleData();
@@ -352,7 +355,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       dropdownStyleData: DropdownStyleData(
         elevation: widget.elevation.toInt(),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(4),
           color: widget.fillColor,
         ),
         isOverButton: widget.isOverButton,
@@ -362,17 +365,19 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       ),
       onChanged: widget.disabled
           ? null
-          : (isMultiSelect ? (_) {} : (val) => widget.controller!.value = val),
+          : (isMultiSelect
+              ? (final _) {}
+              : (final val) => widget.controller!.value = val),
       isExpanded: true,
-      selectedItemBuilder: (context) => widget.options
+      selectedItemBuilder: (final context) => widget.options
           .map(
-            (item) => Align(
+            (final item) => Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
                 isMultiSelect
                     ? currentValues
-                        .where((v) => optionLabels.containsKey(v))
-                        .map((v) => optionLabels[v])
+                        .where((final v) => optionLabels.containsKey(v))
+                        .map((final v) => optionLabels[v])
                         .join(', ')
                     : optionLabels[item]!,
                 style: widget.textStyle,
@@ -413,16 +418,15 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
                   ),
                 ),
               ),
-              searchMatchFn: (item, searchValue) {
-                return (optionLabels[item.value] ?? '')
-                    .toLowerCase()
-                    .contains(searchValue.toLowerCase());
-              },
+              searchMatchFn: (final item, final searchValue) =>
+                  (optionLabels[item.value] ?? '')
+                      .toLowerCase()
+                      .contains(searchValue.toLowerCase()),
             )
           : null,
       // This is to clear the search value when you close the menu
       onMenuStateChange: widget.isSearchable
-          ? (isOpen) {
+          ? (final isOpen) {
               if (!isOpen) {
                 _textEditingController.clear();
               }

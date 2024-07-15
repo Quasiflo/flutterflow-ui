@@ -11,17 +11,21 @@ const _kMinRowsPerPage = 5;
 
 typedef ColumnsBuilder<T> = List<DataColumn> Function(void Function(int, bool));
 typedef DataRowBuilder<T> = DataRow? Function(
-    T, int, bool, void Function(bool?)?);
+  T,
+  int,
+  bool,
+  void Function(bool?)?,
+);
 
 class FlutterFlowDataTableController<T> extends DataTableSource {
   FlutterFlowDataTableController({
-    List<T>? initialData,
-    int? numRows,
-    PaginatorController? paginatorController,
-    bool selectable = false,
+    final List<T>? initialData,
+    final int? numRows,
+    final PaginatorController? paginatorController,
+    final bool selectable = false,
   }) {
     data = initialData?.toList() ?? [];
-    numRows = numRows;
+    _numRows = numRows;
     this.paginatorController = paginatorController ?? PaginatorController();
     _selectable = selectable;
   }
@@ -30,8 +34,10 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
   late PaginatorController paginatorController;
   List<T> data = [];
   int? _numRows;
-  List<T> get selectedData =>
-      selectedRows.where((i) => i < data.length).map(data.elementAt).toList();
+  List<T> get selectedData => selectedRows
+      .where((final i) => i < data.length)
+      .map(data.elementAt)
+      .toList();
 
   bool _selectable = false;
   final Set<int> selectedRows = {};
@@ -41,10 +47,10 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
   bool sortAscending = true;
 
   void init({
-    DataRowBuilder<T>? dataRowBuilder,
-    bool? selectable,
-    List<T>? initialData,
-    int? initialNumRows,
+    final DataRowBuilder<T>? dataRowBuilder,
+    final bool? selectable,
+    final List<T>? initialData,
+    final int? initialNumRows,
   }) {
     _dataRowBuilder = dataRowBuilder ?? _dataRowBuilder;
     _selectable = selectable ?? _selectable;
@@ -53,9 +59,9 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
   }
 
   void updateData({
-    List<T>? data,
-    int? numRows,
-    bool notify = true,
+    final List<T>? data,
+    final int? numRows,
+    final bool notify = true,
   }) {
     this.data = data?.toList() ?? this.data;
     _numRows = numRows ?? _numRows;
@@ -65,9 +71,9 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
   }
 
   void updateSort({
-    required int columnIndex,
-    required bool ascending,
-    Function(int, bool)? onSortChanged,
+    required final int columnIndex,
+    required final bool ascending,
+    final void Function(int, bool)? onSortChanged,
   }) {
     sortColumnIndex = columnIndex;
     sortAscending = ascending;
@@ -78,7 +84,7 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
   }
 
   @override
-  DataRow? getRow(int index) {
+  DataRow? getRow(final int index) {
     final row = data.elementAtOrNull(index);
     return _dataRowBuilder != null && row != null
         ? _dataRowBuilder!(
@@ -86,7 +92,7 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
             index,
             selectedRows.contains(index),
             _selectable
-                ? (selected) {
+                ? (final selected) {
                     if (selected == null) {
                       return;
                     }
@@ -113,12 +119,12 @@ class FlutterFlowDataTableController<T> extends DataTableSource {
 /// A widget that displays tabular data in a grid format.
 class FlutterFlowDataTable<T> extends StatefulWidget {
   const FlutterFlowDataTable({
-    super.key,
     required this.controller,
     required this.data,
-    this.numRows,
     required this.columnsBuilder,
     required this.dataRowBuilder,
+    super.key,
+    this.numRows,
     this.emptyBuilder,
     this.onPageChanged,
     this.onSortChanged,
@@ -154,13 +160,13 @@ class FlutterFlowDataTable<T> extends StatefulWidget {
   final FlutterFlowDataTableController<T> controller;
   final List<T> data;
   final int? numRows;
-  final ColumnsBuilder columnsBuilder;
+  final ColumnsBuilder<T> columnsBuilder;
   final DataRowBuilder<T> dataRowBuilder;
   final Widget? Function()? emptyBuilder;
   // Callback functions
-  final Function(int)? onPageChanged;
-  final Function(int, bool)? onSortChanged;
-  final Function(int)? onRowsPerPageChanged;
+  final void Function(int)? onPageChanged;
+  final void Function(int, bool)? onSortChanged;
+  final void Function(int)? onRowsPerPageChanged;
   // Functionality options
   final bool paginated;
   final bool selectable;
@@ -219,7 +225,7 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
   }
 
   @override
-  void didUpdateWidget(FlutterFlowDataTable<T> oldWidget) {
+  void didUpdateWidget(final FlutterFlowDataTable<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     controller.updateData(
       data: widget.data,
@@ -229,9 +235,9 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final columns = widget.columnsBuilder(
-      (index, ascending) {
+      (final index, final ascending) {
         controller.updateSort(
           columnIndex: index,
           ascending: ascending,
@@ -246,14 +252,14 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
         widget.checkboxCheckColor ?? Colors.black54,
       ),
       fillColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected)
+        (final states) => states.contains(WidgetState.selected)
             ? widget.checkboxSelectedFillColor ?? Colors.white.withOpacity(0.01)
             : widget.checkboxUnselectedFillColor ??
                 Colors.white.withOpacity(0.01),
       ),
       side: WidgetStateBorderSide.resolveWith(
-        (states) => BorderSide(
-          width: 2.0,
+        (final states) => BorderSide(
+          width: 2,
           color: states.contains(WidgetState.selected)
               ? widget.checkboxSelectedBorderColor ?? Colors.black54
               : widget.checkboxUnselectedBorderColor ?? Colors.black54,
@@ -287,19 +293,17 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
             rowsPerPage: widget.paginated ? initialRowsPerPage : rowCount,
             availableRowsPerPage: const [5, 10, 25, 50, 100],
             onPageChanged: widget.onPageChanged != null
-                ? (index) => widget.onPageChanged!(index)
+                ? (final index) => widget.onPageChanged!(index)
                 : null,
             columnSpacing: widget.columnSpacing,
             onRowsPerPageChanged: widget.paginated
-                ? (value) {
+                ? (final value) {
                     controller.rowsPerPage = value ?? initialRowsPerPage;
-                    if (widget.onRowsPerPageChanged != null) {
-                      widget.onRowsPerPageChanged!(controller.rowsPerPage);
-                    }
+                    widget.onRowsPerPageChanged?.call(controller.rowsPerPage);
                   }
                 : null,
             columns: columns,
-            empty: widget.emptyBuilder != null ? widget.emptyBuilder!() : null,
+            empty: widget.emptyBuilder?.call(),
             sortColumnIndex: controller.sortColumnIndex,
             sortAscending: controller.sortAscending,
             showCheckboxColumn: widget.selectable,
@@ -334,9 +338,9 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
 
   // Return the total fixed width of all columns that have a specified width,
   // plus one to make the data table scrollable if there is insufficient space.
-  double _getColumnsWidth(List<DataColumn> columns) =>
-      columns.where((c) => c is DataColumn2 && c.fixedWidth != null).fold(
+  double _getColumnsWidth(final List<DataColumn> columns) =>
+      columns.where((final c) => c is DataColumn2 && c.fixedWidth != null).fold(
             ((widget.selectable ? 2 : 1) * _kDataTableHorizontalMargin) + 1,
-            (sum, col) => sum + (col as DataColumn2).fixedWidth!,
+            (final sum, final col) => sum + (col as DataColumn2).fixedWidth!,
           );
 }

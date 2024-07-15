@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:from_css_color/from_css_color.dart';
@@ -7,23 +6,26 @@ import 'package:intl/intl.dart';
 import 'package:json_path/json_path.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-export 'dart:convert' show jsonEncode, jsonDecode;
-export 'dart:math' show min, max;
+export 'dart:convert' show jsonDecode, jsonEncode;
+export 'dart:math' show max, min;
 export 'dart:typed_data' show Uint8List;
-
 export 'package:intl/intl.dart';
 export 'package:page_transition/page_transition.dart';
-
 export 'flutter_flow_model.dart';
 export 'lat_lng.dart';
 export 'place.dart';
 
-final RouteObserver<ModalRoute> routeObserver = RouteObserver<PageRoute>();
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<PageRoute<void>>();
 
-T valueOrDefault<T>(T? value, T defaultValue) =>
+T valueOrDefault<T>(final T? value, final T defaultValue) =>
     (value is String && value.isEmpty) || value == null ? defaultValue : value;
 
-String dateTimeFormat(String format, DateTime? dateTime, {String? locale}) {
+String dateTimeFormat(
+  final String format,
+  final DateTime? dateTime, {
+  final String? locale,
+}) {
   if (dateTime == null) {
     return '';
   }
@@ -33,10 +35,10 @@ String dateTimeFormat(String format, DateTime? dateTime, {String? locale}) {
   return DateFormat(format, locale).format(dateTime);
 }
 
-Color colorFromCssString(String color, {Color? defaultColor}) {
+Color colorFromCssString(final String color, {final Color? defaultColor}) {
   try {
     return fromCssColor(color);
-  } catch (_) {}
+  } on FormatException catch (_) {}
   return defaultColor ?? Colors.black;
 }
 
@@ -56,13 +58,13 @@ enum DecimalType {
 }
 
 String formatNumber(
-  num? value, {
-  required FormatType formatType,
-  DecimalType? decimalType,
-  String? currency,
-  bool toLowerCase = false,
-  String? format,
-  String? locale,
+  final num? value, {
+  required final FormatType formatType,
+  final DecimalType? decimalType,
+  final String? currency,
+  final bool toLowerCase = false,
+  final String? format,
+  final String? locale,
 }) {
   if (value == null) {
     return '';
@@ -73,30 +75,22 @@ String formatNumber(
       switch (decimalType!) {
         case DecimalType.automatic:
           formattedValue = NumberFormat.decimalPattern().format(value);
-          break;
         case DecimalType.periodDecimal:
           formattedValue = NumberFormat.decimalPattern('en_US').format(value);
-          break;
         case DecimalType.commaDecimal:
           formattedValue = NumberFormat.decimalPattern('es_PA').format(value);
-          break;
       }
-      break;
     case FormatType.percent:
       formattedValue = NumberFormat.percentPattern().format(value);
-      break;
     case FormatType.scientific:
       formattedValue = NumberFormat.scientificPattern().format(value);
       if (toLowerCase) {
         formattedValue = formattedValue.toLowerCase();
       }
-      break;
     case FormatType.compact:
       formattedValue = NumberFormat.compact().format(value);
-      break;
     case FormatType.compactLong:
       formattedValue = NumberFormat.compactLong().format(value);
-      break;
     case FormatType.custom:
       final hasLocale = locale != null && locale.isNotEmpty;
       formattedValue =
@@ -118,41 +112,43 @@ String formatNumber(
 }
 
 DateTime get getCurrentTimestamp => DateTime.now();
-DateTime dateTimeFromSecondsSinceEpoch(int seconds) {
-  return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
-}
+DateTime dateTimeFromSecondsSinceEpoch(final int seconds) =>
+    DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
 
 extension DateTimeConversionExtension on DateTime {
   int get secondsSinceEpoch => (millisecondsSinceEpoch / 1000).round();
 }
 
 extension DateTimeComparisonOperators on DateTime {
-  bool operator <(DateTime other) => isBefore(other);
-  bool operator >(DateTime other) => isAfter(other);
-  bool operator <=(DateTime other) => this < other || isAtSameMomentAs(other);
-  bool operator >=(DateTime other) => this > other || isAtSameMomentAs(other);
+  bool operator <(final DateTime other) => isBefore(other);
+  bool operator >(final DateTime other) => isAfter(other);
+  bool operator <=(final DateTime other) =>
+      this < other || isAtSameMomentAs(other);
+  bool operator >=(final DateTime other) =>
+      this > other || isAtSameMomentAs(other);
 }
 
 dynamic getJsonField(
-  dynamic response,
-  String jsonPath, [
-  bool isForList = false,
+  final dynamic response,
+  final String jsonPath, [
+  final bool isForList = false,
 ]) {
   final field = JsonPath(jsonPath).read(response);
   if (field.isEmpty) {
     return null;
   }
   if (field.length > 1) {
-    return field.map((f) => f.value).toList();
+    return field.map((final f) => f.value).toList();
   }
   final value = field.first.value;
   return isForList && value is! Iterable ? [value] : value;
 }
 
-Rect? getWidgetBoundingBox(BuildContext context) {
+Rect? getWidgetBoundingBox(final BuildContext context) {
   try {
     final renderBox = context.findRenderObject() as RenderBox?;
     return renderBox!.localToGlobal(Offset.zero) & renderBox.size;
+    // ignore: avoid_catches_without_on_clauses
   } catch (_) {
     return null;
   }
@@ -165,14 +161,14 @@ bool get isWeb => kIsWeb;
 const kBreakpointSmall = 479.0;
 const kBreakpointMedium = 767.0;
 const kBreakpointLarge = 991.0;
-bool isMobileWidth(BuildContext context) =>
+bool isMobileWidth(final BuildContext context) =>
     MediaQuery.sizeOf(context).width < kBreakpointSmall;
 bool responsiveVisibility({
-  required BuildContext context,
-  bool phone = true,
-  bool tablet = true,
-  bool tabletLandscape = true,
-  bool desktop = true,
+  required final BuildContext context,
+  final bool phone = true,
+  final bool tablet = true,
+  final bool tabletLandscape = true,
+  final bool desktop = true,
 }) {
   final width = MediaQuery.sizeOf(context).width;
   if (width < kBreakpointSmall) {
@@ -195,22 +191,22 @@ const kTextValidatorWebsiteRegex =
 
 extension FFTextEditingControllerExt on TextEditingController? {
   String get text => this == null ? '' : this!.text;
-  set text(String newText) => this?.text = newText;
+  set text(final String newText) => this?.text = newText;
 }
 
 extension IterableExt<T> on Iterable<T> {
-  List<S> mapIndexed<S>(S Function(int, T) func) => toList()
+  List<S> mapIndexed<S>(final S Function(int, T) func) => toList()
       .asMap()
-      .map((index, value) => MapEntry(index, func(index, value)))
+      .map((final index, final value) => MapEntry(index, func(index, value)))
       .values
       .toList();
 }
 
 void showSnackbar(
-  BuildContext context,
-  String message, {
-  bool loading = false,
-  int duration = 4,
+  final BuildContext context,
+  final String message, {
+  final bool loading = false,
+  final int duration = 4,
 }) {
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
@@ -219,7 +215,7 @@ void showSnackbar(
         children: [
           if (loading)
             const Padding(
-              padding: EdgeInsetsDirectional.only(end: 10.0),
+              padding: EdgeInsetsDirectional.only(end: 10),
               child: SizedBox(
                 height: 20,
                 width: 20,
@@ -237,40 +233,47 @@ void showSnackbar(
 }
 
 extension FFStringExt on String {
-  String maybeHandleOverflow({int? maxChars, String replacement = ''}) =>
+  String maybeHandleOverflow({
+    final int? maxChars,
+    final String replacement = '',
+  }) =>
       maxChars != null && length > maxChars
           ? replaceRange(maxChars, null, replacement)
           : this;
 }
 
 extension ListFilterExt<T> on Iterable<T?> {
-  List<T> get withoutNulls => where((s) => s != null).map((e) => e!).toList();
+  List<T> get withoutNulls =>
+      where((final s) => s != null).map((final e) => e!).toList();
 }
 
 extension ListDivideExt<T extends Widget> on Iterable<T> {
   Iterable<MapEntry<int, Widget>> get enumerate => toList().asMap().entries;
 
-  List<Widget> divide(Widget t) => isEmpty
+  List<Widget> divide(final Widget t) => isEmpty
       ? []
-      : (enumerate.map((e) => [e.value, t]).expand((i) => i).toList()
+      : (enumerate
+          .map((final e) => [e.value, t])
+          .expand((final i) => i)
+          .toList()
         ..removeLast());
 
-  List<Widget> around(Widget t) => addToStart(t).addToEnd(t);
+  List<Widget> around(final Widget t) => addToStart(t).addToEnd(t);
 
-  List<Widget> addToStart(Widget t) =>
-      enumerate.map((e) => e.value).toList()..insert(0, t);
+  List<Widget> addToStart(final Widget t) =>
+      enumerate.map((final e) => e.value).toList()..insert(0, t);
 
-  List<Widget> addToEnd(Widget t) =>
-      enumerate.map((e) => e.value).toList()..add(t);
+  List<Widget> addToEnd(final Widget t) =>
+      enumerate.map((final e) => e.value).toList()..add(t);
 
-  List<Padding> paddingTopEach(double val) =>
-      map((w) => Padding(padding: EdgeInsets.only(top: val), child: w))
+  List<Padding> paddingTopEach(final double val) =>
+      map((final w) => Padding(padding: EdgeInsets.only(top: val), child: w))
           .toList();
 }
 
 extension StatefulWidgetExtensions on State<StatefulWidget> {
   /// Check if the widget exist before safely setting state.
-  void safeSetState(VoidCallback fn) {
+  void safeSetState(final VoidCallback fn) {
     if (mounted) {
       // ignore: invalid_use_of_protected_member
       setState(fn);

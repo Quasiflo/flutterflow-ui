@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 
 class FlutterFlowCountController extends StatefulWidget {
   const FlutterFlowCountController({
-    super.key,
     required this.decrementIconBuilder,
     required this.incrementIconBuilder,
     required this.countBuilder,
     required this.count,
     required this.updateCount,
+    super.key,
     this.stepSize = 1,
     this.minimum,
     this.maximum,
-    this.contentPadding = const EdgeInsets.symmetric(horizontal: 25.0),
+    this.contentPadding = const EdgeInsets.symmetric(horizontal: 25),
   });
 
   final Widget Function(bool enabled) decrementIconBuilder;
   final Widget Function(bool enabled) incrementIconBuilder;
   final Widget Function(int count) countBuilder;
   final int count;
-  final Function(int) updateCount;
+  final void Function(int) updateCount;
   final int stepSize;
   final int? minimum;
   final int? maximum;
@@ -52,7 +52,7 @@ class _FlutterFlowCountControllerState
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(final BuildContext context) => Padding(
         padding: widget.contentPadding,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

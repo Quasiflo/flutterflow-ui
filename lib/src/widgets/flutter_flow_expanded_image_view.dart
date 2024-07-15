@@ -10,8 +10,8 @@ class FlutterFlowExpandedImageView extends StatelessWidget {
   /// - [useHeroAnimation] parameter determines whether to use a hero animation when transitioning to the expanded image view.
   /// - [tag] parameter is an optional tag used for the hero animation.
   const FlutterFlowExpandedImageView({
-    super.key,
     required this.image,
+    super.key,
     this.allowRotation = false,
     this.useHeroAnimation = true,
     this.tag,
@@ -23,7 +23,7 @@ class FlutterFlowExpandedImageView extends StatelessWidget {
   final Object? tag;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
     return Material(
       color: Colors.black,
@@ -40,7 +40,7 @@ class FlutterFlowExpandedImageView extends StatelessWidget {
                 heroAttributes: useHeroAnimation
                     ? PhotoViewHeroAttributes(tag: tag!)
                     : null,
-                onScaleEnd: (context, details, value) {
+                onScaleEnd: (final context, final details, final value) {
                   if (value.scale! < 0.3) {
                     Navigator.pop(context);
                   }
@@ -49,10 +49,9 @@ class FlutterFlowExpandedImageView extends StatelessWidget {
               ),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: const EdgeInsets.only(top: 8),
                   child: IconButton(
                     color: Colors.black,
                     onPressed: () => Navigator.pop(context),
@@ -62,7 +61,7 @@ class FlutterFlowExpandedImageView extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ],

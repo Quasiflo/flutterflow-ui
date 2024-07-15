@@ -14,13 +14,13 @@ class FlutterFlowRiveController extends SimpleAnimation {
   ValueListenable<bool> get changeReactivate => _reactivate;
 
   bool get reactivate => _reactivate.value;
-  set reactivate(bool value) {
+  set reactivate(final bool value) {
     if (_reactivate.value != value) {
       _reactivate.value = value;
     }
   }
 
-  bool endOfAnimation(LinearAnimationInstance? instance) {
+  bool endOfAnimation(final LinearAnimationInstance? instance) {
     if (instance == null) {
       return false;
     }
@@ -28,7 +28,7 @@ class FlutterFlowRiveController extends SimpleAnimation {
   }
 
   @override
-  bool init(RuntimeArtboard artboard) {
+  bool init(final RuntimeArtboard artboard) {
     reactivate = false;
     changeReactivate.addListener(() {
       if (reactivate) {
@@ -39,7 +39,7 @@ class FlutterFlowRiveController extends SimpleAnimation {
   }
 
   @override
-  void apply(RuntimeArtboard artboard, double elapsedSeconds) {
+  void apply(final RuntimeArtboard artboard, final double elapsedSeconds) {
     if (instance == null) {
       return;
     }

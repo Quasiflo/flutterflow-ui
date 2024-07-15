@@ -20,17 +20,17 @@ class FlutterFlowCheckboxGroup extends StatefulWidget {
   /// - [initialized] parameter indicates whether the checkbox group is initialized with a value.
   /// - [unselectedTextStyle] parameter is the style of the text for unselected checkboxes.
   const FlutterFlowCheckboxGroup({
-    super.key,
     required this.options,
     required this.onChanged,
     required this.controller,
     required this.textStyle,
-    this.labelPadding,
-    this.itemPadding,
     required this.activeColor,
     required this.checkColor,
-    this.checkboxBorderRadius,
     required this.checkboxBorderColor,
+    super.key,
+    this.labelPadding,
+    this.itemPadding,
+    this.checkboxBorderRadius,
     this.initialized = true,
     this.unselectedTextStyle,
   });
@@ -65,10 +65,8 @@ class _FlutterFlowCheckboxGroupState extends State<FlutterFlowCheckboxGroup> {
     checkboxValues = List.from(widget.controller.initialValue ?? []);
     if (!widget.initialized && checkboxValues.isNotEmpty) {
       SchedulerBinding.instance.addPostFrameCallback(
-        (_) {
-          if (widget.onChanged != null) {
-            widget.onChanged!(checkboxValues);
-          }
+        (final _) {
+          widget.onChanged?.call(checkboxValues);
         },
       );
     }
@@ -76,9 +74,7 @@ class _FlutterFlowCheckboxGroupState extends State<FlutterFlowCheckboxGroup> {
       if (!listEquals(checkboxValues, selectedValues)) {
         setState(() => checkboxValues = List.from(selectedValues));
       }
-      if (widget.onChanged != null) {
-        widget.onChanged!(selectedValues);
-      }
+      widget.onChanged?.call(selectedValues);
     };
     changeSelectedValues.addListener(_selectedValueListener);
   }
@@ -90,12 +86,12 @@ class _FlutterFlowCheckboxGroupState extends State<FlutterFlowCheckboxGroup> {
   }
 
   @override
-  Widget build(BuildContext context) => ListView.builder(
+  Widget build(final BuildContext context) => ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         padding: EdgeInsets.zero,
         itemCount: widget.options.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (final context, final index) {
           final option = widget.options[index];
           final selected = selectedValues.contains(option);
           final unselectedTextStyle =
@@ -109,7 +105,7 @@ class _FlutterFlowCheckboxGroupState extends State<FlutterFlowCheckboxGroup> {
                   Checkbox(
                     value: selected,
                     onChanged: widget.onChanged != null
-                        ? (isSelected) {
+                        ? (final isSelected) {
                             if (isSelected == null) {
                               return;
                             }

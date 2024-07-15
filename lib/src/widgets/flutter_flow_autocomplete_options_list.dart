@@ -5,12 +5,12 @@ import 'package:substring_highlight/substring_highlight.dart';
 /// A widget that displays a list of autocomplete options for a text field.
 class AutocompleteOptionsList extends StatelessWidget {
   const AutocompleteOptionsList({
-    super.key,
     required this.textFieldKey,
     required this.textController,
     required this.options,
     required this.onSelected,
     required this.textStyle,
+    super.key,
     this.textAlign = TextAlign.start,
     this.optionBackgroundColor,
     this.optionHighlightColor,
@@ -29,7 +29,7 @@ class AutocompleteOptionsList extends StatelessWidget {
   final List<String> options;
 
   /// The callback function that is called when an option is selected.
-  final Function(String) onSelected;
+  final void Function(String) onSelected;
 
   /// The color used to highlight the selected option.
   final Color? optionHighlightColor;
@@ -53,9 +53,9 @@ class AutocompleteOptionsList extends StatelessWidget {
   final double elevation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final textFieldBox =
-        textFieldKey.currentContext!.findRenderObject() as RenderBox;
+        textFieldKey.currentContext!.findRenderObject()! as RenderBox;
     final textFieldWidth = textFieldBox.size.width;
     return Align(
       alignment: Alignment.topLeft,
@@ -70,32 +70,35 @@ class AutocompleteOptionsList extends StatelessWidget {
             padding: EdgeInsets.zero,
             shrinkWrap: true,
             itemCount: options.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final option = options.elementAt(index);
               return InkWell(
                 onTap: () => onSelected(option),
-                child: Builder(builder: (context) {
-                  final bool highlight =
-                      AutocompleteHighlightedOption.of(context) == index;
-                  if (highlight) {
-                    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                      Scrollable.ensureVisible(context, alignment: 0.5);
-                    });
-                  }
-                  return Container(
-                    color: highlight
-                        ? optionHighlightColor ?? Theme.of(context).focusColor
-                        : optionBackgroundColor,
-                    padding: const EdgeInsets.all(16.0),
-                    child: SubstringHighlight(
-                      text: option,
-                      term: textController.text,
-                      textStyle: textStyle,
-                      textAlign: textAlign,
-                      textStyleHighlight: textHighlightStyle ?? textStyle,
-                    ),
-                  );
-                }),
+                child: Builder(
+                  builder: (final context) {
+                    final highlight =
+                        AutocompleteHighlightedOption.of(context) == index;
+                    if (highlight) {
+                      SchedulerBinding.instance
+                          .addPostFrameCallback((final timeStamp) async {
+                        await Scrollable.ensureVisible(context, alignment: 0.5);
+                      });
+                    }
+                    return Container(
+                      color: highlight
+                          ? optionHighlightColor ?? Theme.of(context).focusColor
+                          : optionBackgroundColor,
+                      padding: const EdgeInsets.all(16),
+                      child: SubstringHighlight(
+                        text: option,
+                        term: textController.text,
+                        textStyle: textStyle,
+                        textAlign: textAlign,
+                        textStyleHighlight: textHighlightStyle ?? textStyle,
+                      ),
+                    );
+                  },
+                ),
               );
             },
           ),

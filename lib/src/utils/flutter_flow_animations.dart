@@ -16,54 +16,72 @@ class AnimationInfo {
   });
 
   final AnimationTrigger trigger;
-  final List<Effect> Function()? effectsBuilder;
+  final List<Effect<dynamic>> Function()? effectsBuilder;
   final bool applyInitialState;
   final bool loop;
   final bool reverse;
   late AnimationController controller;
 
-  List<Effect>? _effects;
+  List<Effect<dynamic>>? _effects;
 
-  List<Effect> get effects => _effects ??= effectsBuilder!();
+  List<Effect<dynamic>> get effects => _effects ??= effectsBuilder!();
 
-  void maybeUpdateEffects(List<Effect>? updatedEffects) {
+  void maybeUpdateEffects(final List<Effect<dynamic>>? updatedEffects) {
     if (updatedEffects != null) {
       _effects = updatedEffects;
     }
   }
 }
 
-void createAnimation(AnimationInfo animation, TickerProvider vsync) {
+void createAnimation(
+  final AnimationInfo animation,
+  final TickerProvider vsync,
+) {
   final newController = AnimationController(vsync: vsync);
   animation.controller = newController;
 }
 
-void setupAnimations(Iterable<AnimationInfo> animations, TickerProvider vsync) {
-  animations.forEach((animation) => createAnimation(animation, vsync));
+void setupAnimations(
+  final Iterable<AnimationInfo> animations,
+  final TickerProvider vsync,
+) {
+  for (final animation in animations) {
+    createAnimation(animation, vsync);
+  }
 }
 
 extension AnimatedWidgetExtension on Widget {
   Widget animateOnPageLoad(
-    AnimationInfo animationInfo, {
-    List<Effect>? effects,
+    final AnimationInfo animationInfo, {
+    final List<Effect<dynamic>>? effects,
   }) {
     animationInfo.maybeUpdateEffects(effects);
     return Animate(
       effects: animationInfo.effects,
       child: this,
-      onPlay: (controller) => animationInfo.loop ? controller.repeat(reverse: animationInfo.reverse) : null,
-      onComplete: (controller) => !animationInfo.loop && animationInfo.reverse ? controller.reverse() : null,
+      onPlay: (final controller) => animationInfo.loop
+          ? controller.repeat(reverse: animationInfo.reverse)
+          : null,
+      onComplete: (final controller) =>
+          !animationInfo.loop && animationInfo.reverse
+              ? controller.reverse()
+              : null,
     );
   }
 
   Widget animateOnActionTrigger(
-    AnimationInfo animationInfo, {
-    List<Effect>? effects,
-    bool hasBeenTriggered = false,
+    final AnimationInfo animationInfo, {
+    final List<Effect<dynamic>>? effects,
+    final bool hasBeenTriggered = false,
   }) {
     animationInfo.maybeUpdateEffects(effects);
     return hasBeenTriggered || animationInfo.applyInitialState
-        ? Animate(controller: animationInfo.controller, autoPlay: false, effects: animationInfo.effects, child: this)
+        ? Animate(
+            controller: animationInfo.controller,
+            autoPlay: false,
+            effects: animationInfo.effects,
+            child: this,
+          )
         : this;
   }
 }
@@ -73,24 +91,24 @@ class TiltEffect extends Effect<Offset> {
     super.delay,
     super.duration,
     super.curve,
-    Offset? begin,
-    Offset? end,
+    final Offset? begin,
+    final Offset? end,
   }) : super(
-          begin: begin ?? const Offset(0.0, 0.0),
-          end: end ?? const Offset(0.0, 0.0),
+          begin: begin ?? Offset.zero,
+          end: end ?? Offset.zero,
         );
 
   @override
   Widget build(
-    BuildContext context,
-    Widget child,
-    AnimationController controller,
-    EffectEntry entry,
+    final BuildContext context,
+    final Widget child,
+    final AnimationController controller,
+    final EffectEntry entry,
   ) {
-    Animation<Offset> animation = buildAnimation(controller, entry);
+    final animation = buildAnimation(controller, entry);
     return getOptimizedBuilder<Offset>(
       animation: animation,
-      builder: (_, __) => Transform(
+      builder: (final _, final __) => Transform(
         transform: Matrix4.identity()
           ..setEntry(3, 2, 0.001)
           ..rotateX(animation.value.dx)

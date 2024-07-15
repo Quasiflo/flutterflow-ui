@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -18,8 +19,8 @@ class FlutterFlowIconButton extends StatefulWidget {
   /// - [showLoadingIndicator] parameter specifies whether to show a loading indicator on the button.
   /// - [onPressed] parameter specifies the callback function to be called when the button is pressed.
   const FlutterFlowIconButton({
-    super.key,
     required this.icon,
+    super.key,
     this.borderColor,
     this.borderRadius,
     this.borderWidth,
@@ -44,7 +45,7 @@ class FlutterFlowIconButton extends StatefulWidget {
   final Color? borderColor;
   final double? borderWidth;
   final bool showLoadingIndicator;
-  final Function()? onPressed;
+  final FutureOr<void> Function()? onPressed;
 
   @override
   State<FlutterFlowIconButton> createState() => _FlutterFlowIconButtonState();
@@ -63,7 +64,7 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
   }
 
   @override
-  void didUpdateWidget(FlutterFlowIconButton oldWidget) {
+  void didUpdateWidget(final FlutterFlowIconButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateIcon();
   }
@@ -71,7 +72,7 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
   void _updateIcon() {
     final isFontAwesome = widget.icon is FaIcon;
     if (isFontAwesome) {
-      FaIcon icon = widget.icon as FaIcon;
+      final icon = widget.icon as FaIcon;
       effectiveIcon = FaIcon(
         icon.icon,
         size: icon.size,
@@ -79,7 +80,7 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
       iconSize = icon.size;
       iconColor = icon.color;
     } else {
-      Icon icon = widget.icon as Icon;
+      final icon = widget.icon as Icon;
       effectiveIcon = Icon(
         icon.icon,
         size: icon.size,
@@ -90,21 +91,19 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    ButtonStyle style = ButtonStyle(
+  Widget build(final BuildContext context) {
+    final style = ButtonStyle(
       shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
-        (states) {
-          return RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(widget.borderRadius ?? 0),
-            side: BorderSide(
-              color: widget.borderColor ?? Colors.transparent,
-              width: widget.borderWidth ?? 0,
-            ),
-          );
-        },
+        (final states) => RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(widget.borderRadius ?? 0),
+          side: BorderSide(
+            color: widget.borderColor ?? Colors.transparent,
+            width: widget.borderWidth ?? 0,
+          ),
+        ),
       ),
       iconColor: WidgetStateProperty.resolveWith<Color?>(
-        (states) {
+        (final states) {
           if (states.contains(WidgetState.disabled) &&
               widget.disabledIconColor != null) {
             return widget.disabledIconColor;
@@ -117,7 +116,7 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
         },
       ),
       backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-        (states) {
+        (final states) {
           if (states.contains(WidgetState.disabled) &&
               widget.disabledColor != null) {
             return widget.disabledColor;
@@ -130,7 +129,7 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
           return widget.fillColor;
         },
       ),
-      overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((final states) {
         if (states.contains(WidgetState.pressed)) {
           return null;
         }

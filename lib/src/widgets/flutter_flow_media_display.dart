@@ -3,7 +3,7 @@ import 'package:mime_type/mime_type.dart';
 
 const _kSupportedVideoMimes = {'video/mp4', 'video/mpeg'};
 
-bool _isVideoPath(String path) =>
+bool _isVideoPath(final String path) =>
     _kSupportedVideoMimes.contains(mime(path.split('?').first));
 
 class FlutterFlowMediaDisplay extends StatelessWidget {
@@ -13,10 +13,10 @@ class FlutterFlowMediaDisplay extends StatelessWidget {
   /// - [imageBuilder] parameter is a function that takes a [String] path and returns a widget to display an image.
   /// - [videoPlayerBuilder] parameter is a function that takes a [String] path and returns a widget to display a video player.
   const FlutterFlowMediaDisplay({
-    super.key,
     required this.path,
     required this.imageBuilder,
     required this.videoPlayerBuilder,
+    super.key,
   });
 
   final String path;
@@ -24,6 +24,6 @@ class FlutterFlowMediaDisplay extends StatelessWidget {
   final Widget Function(String) videoPlayerBuilder;
 
   @override
-  Widget build(BuildContext context) =>
+  Widget build(final BuildContext context) =>
       _isVideoPath(path) ? videoPlayerBuilder(path) : imageBuilder(path);
 }

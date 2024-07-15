@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 
@@ -20,18 +19,18 @@ class FlutterFlowTimerController with ChangeNotifier {
 
   void onResetTimer() {
     timer.onResetTimer();
-    late final StreamSubscription subscription;
+    late final StreamSubscription<int> subscription;
     // We can't notify listeners right away: they'll see the old timer value.
     // We need to wait until the next time is emitted.
-    subscription = timer.rawTime.listen((_) {
+    subscription = timer.rawTime.listen((final _) async {
       notifyListeners();
-      subscription.cancel();
+      await subscription.cancel();
     });
   }
 
   @override
-  void dispose() {
-    timer.dispose();
+  Future<void> dispose() async {
+    await timer.dispose();
     super.dispose();
   }
 }
@@ -40,15 +39,15 @@ class FlutterFlowTimerController with ChangeNotifier {
 class FlutterFlowTimer extends StatefulWidget {
   /// Creates a [FlutterFlowTimer] widget.
   const FlutterFlowTimer({
-    super.key,
     required this.initialTime,
     required this.controller,
     required this.getDisplayTime,
     required this.onChanged,
-    this.updateStateInterval,
-    this.onEnded,
     required this.textAlign,
     required this.style,
+    super.key,
+    this.updateStateInterval,
+    this.onEnded,
   });
 
   /// The initial time for the timer.
@@ -61,13 +60,17 @@ class FlutterFlowTimer extends StatefulWidget {
   final String Function(int) getDisplayTime;
 
   /// A callback function that is called when the timer value changes.
-  final Function(int value, String displayTime, bool shouldUpdate) onChanged;
+  final FutureOr<void> Function(
+    int value,
+    String displayTime,
+    bool shouldUpdate,
+  ) onChanged;
 
   /// The interval at which the timer state should be updated.
   final Duration? updateStateInterval;
 
   /// A callback function that is called when the timer ends.
-  final Function()? onEnded;
+  final FutureOr<void> Function()? onEnded;
 
   /// The alignment of the timer text.
   final TextAlign textAlign;
@@ -86,9 +89,9 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
   late String _displayTime;
   late int lastUpdateMs;
 
-  Function() get onEnded => widget.onEnded ?? () {};
+  FutureOr<void> Function() get onEnded => widget.onEnded ?? () {};
 
-  void _initTimer({required bool shouldUpdate}) {
+  Future<void> _initTimer({required final bool shouldUpdate}) async {
     // Initialize timer display time and last update time.
     _displayTime = widget.getDisplayTime(widget.controller.timer.rawTime.value);
     lastUpdateMs = timerValue;
@@ -97,15 +100,15 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
   }
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
     // Set the initial time.
     widget.controller.timer.setPresetTime(mSec: widget.initialTime, add: false);
     // Initialize timer properties without updating outer state.
-    _initTimer(shouldUpdate: false);
+    await _initTimer(shouldUpdate: false);
     // Add a listener for when the timer value changes to update the
     // displayed timer value.
-    widget.controller.timer.rawTime.listen((_) {
+    widget.controller.timer.rawTime.listen((final _) {
       _displayTime = widget.getDisplayTime(timerValue);
       widget.onChanged(timerValue, _displayTime, _shouldUpdate());
       if (mounted) {
@@ -116,7 +119,7 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
     widget.controller.addListener(() => _initTimer(shouldUpdate: true));
 
     // Add listener for when the timer ends.
-    widget.controller.timer.fetchEnded.listen((_) => onEnded());
+    widget.controller.timer.fetchEnded.listen((final _) => onEnded());
   }
 
   bool _shouldUpdate() {
@@ -136,7 +139,7 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
   }
 
   @override
-  Widget build(BuildContext context) => Text(
+  Widget build(final BuildContext context) => Text(
         _displayTime,
         textAlign: widget.textAlign,
         style: widget.style,

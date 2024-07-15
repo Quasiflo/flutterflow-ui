@@ -1,8 +1,10 @@
-import 'lat_lng.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutterflow_ui/src/utils/lat_lng.dart';
 
+@immutable
 class FFPlace {
   const FFPlace({
-    this.latLng = const LatLng(0.0, 0.0),
+    this.latLng = const LatLng(0, 0),
     this.name = '',
     this.address = '',
     this.city = '',
@@ -20,7 +22,8 @@ class FFPlace {
   final String zipCode;
 
   @override
-  String toString() => '''FFPlace(
+  String toString() => '''
+FFPlace(
         latLng: $latLng,
         name: $name,
         address: $address,
@@ -34,7 +37,7 @@ class FFPlace {
   int get hashCode => latLng.hashCode;
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(final Object other) =>
       other is FFPlace &&
       latLng == other.latLng &&
       name == other.name &&

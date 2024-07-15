@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
@@ -23,7 +23,6 @@ class FlutterFlowSwipeableStack extends StatefulWidget {
   /// - [cardPadding] is the padding for each card in the stack.
   /// - [backCardOffset] is the offset for the back card in the stack.
   const FlutterFlowSwipeableStack({
-    super.key,
     required this.itemBuilder,
     required this.itemCount,
     required this.controller,
@@ -35,6 +34,7 @@ class FlutterFlowSwipeableStack extends StatefulWidget {
     required this.loop,
     required this.cardDisplayCount,
     required this.scale,
+    super.key,
     this.maxAngle,
     this.threshold,
     this.cardPadding,
@@ -44,11 +44,11 @@ class FlutterFlowSwipeableStack extends StatefulWidget {
   final Widget Function(BuildContext, int) itemBuilder;
   final CardSwiperController controller;
   final int itemCount;
-  final Function(int) onSwipeFn;
-  final Function(int) onRightSwipe;
-  final Function(int) onLeftSwipe;
-  final Function(int) onUpSwipe;
-  final Function(int) onDownSwipe;
+  final FutureOr<void> Function(int) onSwipeFn;
+  final FutureOr<void> Function(int) onRightSwipe;
+  final FutureOr<void> Function(int) onLeftSwipe;
+  final FutureOr<void> Function(int) onUpSwipe;
+  final FutureOr<void> Function(int) onDownSwipe;
   final bool loop;
   final int cardDisplayCount;
   final double scale;
@@ -63,35 +63,38 @@ class FlutterFlowSwipeableStack extends StatefulWidget {
 
 class _FFSwipeableStackState extends State<FlutterFlowSwipeableStack> {
   @override
-  Widget build(BuildContext context) {
-    return CardSwiper(
-      controller: widget.controller,
-      onSwipe: (previousIndex, currentIndex, direction) {
-        widget.onSwipeFn(previousIndex);
-        if (direction == CardSwiperDirection.left) {
-          widget.onLeftSwipe(previousIndex);
-        } else if (direction == CardSwiperDirection.right) {
-          widget.onRightSwipe(previousIndex);
-        } else if (direction == CardSwiperDirection.top) {
-          widget.onUpSwipe(previousIndex);
-        } else if (direction == CardSwiperDirection.bottom) {
-          widget.onDownSwipe(previousIndex);
-        }
-        return true;
-      },
-      cardsCount: widget.itemCount,
-      cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
-        return widget.itemBuilder(context, index);
-      },
-      isLoop: widget.loop,
-      maxAngle: widget.maxAngle ?? 30,
-      threshold:
-          widget.threshold != null ? (100 * widget.threshold!).round() : 50,
-      scale: widget.scale,
-      padding: widget.cardPadding ??
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-      backCardOffset: widget.backCardOffset ?? const Offset(0, 40),
-      numberOfCardsDisplayed: min(widget.cardDisplayCount, widget.itemCount),
-    );
-  }
+  Widget build(final BuildContext context) => CardSwiper(
+        controller: widget.controller,
+        onSwipe:
+            (final previousIndex, final currentIndex, final direction) async {
+          widget.onSwipeFn(previousIndex);
+          if (direction == CardSwiperDirection.left) {
+            widget.onLeftSwipe(previousIndex);
+          } else if (direction == CardSwiperDirection.right) {
+            widget.onRightSwipe(previousIndex);
+          } else if (direction == CardSwiperDirection.top) {
+            widget.onUpSwipe(previousIndex);
+          } else if (direction == CardSwiperDirection.bottom) {
+            widget.onDownSwipe(previousIndex);
+          }
+          return true;
+        },
+        cardsCount: widget.itemCount,
+        cardBuilder: (
+          final context,
+          final index,
+          final percentThresholdX,
+          final percentThresholdY,
+        ) =>
+            widget.itemBuilder(context, index),
+        isLoop: widget.loop,
+        maxAngle: widget.maxAngle ?? 30,
+        threshold:
+            widget.threshold != null ? (100 * widget.threshold!).round() : 50,
+        scale: widget.scale,
+        padding: widget.cardPadding ??
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+        backCardOffset: widget.backCardOffset ?? const Offset(0, 40),
+        numberOfCardsDisplayed: min(widget.cardDisplayCount, widget.itemCount),
+      );
 }

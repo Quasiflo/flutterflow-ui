@@ -35,15 +35,15 @@ class ChipStyle {
 
 class FlutterFlowChoiceChips extends StatefulWidget {
   const FlutterFlowChoiceChips({
-    super.key,
     required this.options,
     required this.onChanged,
     required this.controller,
     required this.selectedChipStyle,
     required this.unselectedChipStyle,
     required this.chipSpacing,
-    this.rowSpacing = 0.0,
     required this.multiselect,
+    super.key,
+    this.rowSpacing = 0.0,
     this.initialized = true,
     this.alignment = WrapAlignment.start,
     this.disabledColor,
@@ -77,10 +77,8 @@ class _FlutterFlowChoiceChipsState extends State<FlutterFlowChoiceChips> {
     choiceChipValues = List.from(selectedValues);
     if (!widget.initialized && choiceChipValues.isNotEmpty) {
       SchedulerBinding.instance.addPostFrameCallback(
-        (_) {
-          if (widget.onChanged != null) {
-            widget.onChanged!(choiceChipValues);
-          }
+        (final _) {
+          widget.onChanged?.call(choiceChipValues);
         },
       );
     }
@@ -92,9 +90,9 @@ class _FlutterFlowChoiceChipsState extends State<FlutterFlowChoiceChips> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final children = widget.options.map<Widget>(
-      (option) {
+      (final option) {
         final selected = selectedValues.contains(option.label);
         final style =
             selected ? widget.selectedChipStyle : widget.unselectedChipStyle;
@@ -103,7 +101,7 @@ class _FlutterFlowChoiceChipsState extends State<FlutterFlowChoiceChips> {
           child: ChoiceChip(
             selected: selected,
             onSelected: widget.onChanged != null
-                ? (isSelected) {
+                ? (final isSelected) {
                     choiceChipValues = List.from(selectedValues);
                     if (isSelected) {
                       widget.multiselect
@@ -165,7 +163,6 @@ class _FlutterFlowChoiceChipsState extends State<FlutterFlowChoiceChips> {
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: children.divide(
             SizedBox(width: widget.chipSpacing),
           ),

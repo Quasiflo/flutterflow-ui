@@ -6,12 +6,12 @@ import 'package:mapbox_search/mapbox_search.dart' as mapbox;
 /// A widget that displays a static map using the Mapbox API.
 class FlutterFlowStaticMap extends StatelessWidget {
   const FlutterFlowStaticMap({
-    super.key,
     required this.location,
     required this.apiKey,
     required this.style,
     required this.width,
     required this.height,
+    super.key,
     this.fit,
     this.borderRadius = BorderRadius.zero,
     this.markerColor,
@@ -62,11 +62,21 @@ class FlutterFlowStaticMap extends StatelessWidget {
   final int rotation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final imageWidth = width.clamp(1, 1280).toInt();
     final imageHeight = height.clamp(1, 1280).toInt();
-    final imagePath = getStaticMapImageURL(location, apiKey, style, imageWidth,
-        imageHeight, markerColor, markerUrl, zoom, rotation, tilt);
+    final imagePath = getStaticMapImageURL(
+      location,
+      apiKey,
+      style,
+      imageWidth,
+      imageHeight,
+      markerColor,
+      markerUrl,
+      zoom,
+      rotation,
+      tilt,
+    );
     return ClipRRect(
       borderRadius: borderRadius,
       child: cached
@@ -87,32 +97,32 @@ class FlutterFlowStaticMap extends StatelessWidget {
 }
 
 String getStaticMapImageURL(
-  LatLng location,
-  String apiKey,
-  mapbox.MapBoxStyle mapStyle,
-  int width,
-  int height,
-  Color? markerColor,
-  String? markerURL,
-  int zoom,
-  int rotation,
-  int tilt,
+  final LatLng location,
+  final String apiKey,
+  final mapbox.MapBoxStyle mapStyle,
+  final int width,
+  final int height,
+  final Color? markerColor,
+  final String? markerURL,
+  final int zoom,
+  final int rotation,
+  final int tilt,
 ) {
   final finalLocation = (
     lat: location.latitude.clamp(-90, 90).toDouble(),
     long: location.longitude.clamp(-180, 180).toDouble(),
   );
-  final finalRotation = rotation.clamp(-180, 180).round();
-  final finalTilt = tilt.clamp(0, 60).round();
-  final finalZoom = zoom.clamp(0, 22).round();
+  final finalRotation = rotation.clamp(-180, 180);
+  final finalTilt = tilt.clamp(0, 60);
+  final finalZoom = zoom.clamp(0, 22);
   final image = mapbox.StaticImage(apiKey: apiKey);
   if (markerColor == null && (markerURL == null || markerURL.trim().isEmpty)) {
     return image
         .getStaticUrlWithoutMarker(
           center: finalLocation,
           style: mapStyle,
-          width: width.round(),
-          height: height.round(),
+          width: width,
+          height: height,
           zoomLevel: finalZoom,
           bearing: finalRotation,
           pitch: finalTilt,
@@ -135,8 +145,8 @@ String getStaticMapImageURL(
           markerUrl: markerURL,
           center: finalLocation,
           style: mapStyle,
-          width: width.round(),
-          height: height.round(),
+          width: width,
+          height: height,
           zoomLevel: finalZoom,
           bearing: finalRotation,
           pitch: finalTilt,

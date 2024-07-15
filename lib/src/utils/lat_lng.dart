@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
 class LatLng {
   const LatLng(this.latitude, this.longitude);
   final double latitude;
@@ -12,7 +15,7 @@ class LatLng {
   int get hashCode => latitude.hashCode + longitude.hashCode;
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(final Object other) =>
       other is LatLng &&
       latitude == other.latitude &&
       longitude == other.longitude;

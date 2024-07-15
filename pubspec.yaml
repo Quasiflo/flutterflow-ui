@@ -3,11 +3,14 @@ description: Flutter package that makes it easy to use UI widgets and code gener
 homepage: https://docs.flutterflow.io
 repository: https://github.com/FlutterFlow/flutterflow-ui
 version: 0.3.1
+publish_to: "none"
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  quasi_flutter:
+    git: git@github.com:Quasiflo/quasi-flutter.git
   aligned_dialog: ^0.0.6
   aligned_tooltip: ^0.0.1
   apivideo_live_stream: 1.0.7

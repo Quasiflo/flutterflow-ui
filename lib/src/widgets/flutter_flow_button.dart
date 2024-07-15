@@ -98,19 +98,19 @@ class FFButtonWidget extends StatefulWidget {
   /// - [options] parameter is required and specifies the visual options for the button.
   /// - [showLoadingIndicator] parameter is an optional boolean value that determines whether to show a loading indicator when the button is pressed.
   const FFButtonWidget({
-    super.key,
     required this.text,
     required this.onPressed,
+    required this.options,
+    super.key,
     this.icon,
     this.iconData,
-    required this.options,
     this.showLoadingIndicator = true,
   });
 
   final String text;
   final Widget? icon;
   final IconData? iconData;
-  final Function()? onPressed;
+  final void Function()? onPressed;
   final FFButtonOptions options;
   final bool showLoadingIndicator;
 
@@ -127,8 +127,8 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
       widget.options.textStyle?.fontSize == 0 ? null : widget.text;
 
   @override
-  Widget build(BuildContext context) {
-    Widget textWidget = loading
+  Widget build(final BuildContext context) {
+    final textWidget = loading
         ? SizedBox(
             width: widget.options.width == null
                 ? _getTextWidth(text, widget.options.textStyle, maxLines)
@@ -162,7 +162,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
                 }
                 setState(() => loading = true);
                 try {
-                  await widget.onPressed!();
+                  widget.onPressed!();
                 } finally {
                   if (mounted) {
                     setState(() => loading = false);
@@ -172,9 +172,9 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
             : () => widget.onPressed!())
         : null;
 
-    ButtonStyle style = ButtonStyle(
+    final style = ButtonStyle(
       shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
-        (states) {
+        (final states) {
           if (states.contains(WidgetState.hovered) &&
               widget.options.hoverBorderSide != null) {
             return RoundedRectangleBorder(
@@ -191,7 +191,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
         },
       ),
       foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-        (states) {
+        (final states) {
           if (states.contains(WidgetState.disabled) &&
               widget.options.disabledTextColor != null) {
             return widget.options.disabledTextColor;
@@ -204,7 +204,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
         },
       ),
       backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-        (states) {
+        (final states) {
           if (states.contains(WidgetState.disabled) &&
               widget.options.disabledColor != null) {
             return widget.options.disabledColor;
@@ -216,16 +216,18 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
           return widget.options.color;
         },
       ),
-      overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((final states) {
         if (states.contains(WidgetState.pressed)) {
           return widget.options.splashColor;
         }
         return widget.options.hoverColor == null ? null : Colors.transparent;
       }),
-      padding: WidgetStateProperty.all(widget.options.padding ??
-          const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0)),
+      padding: WidgetStateProperty.all(
+        widget.options.padding ??
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      ),
       elevation: WidgetStateProperty.resolveWith<double?>(
-        (states) {
+        (final states) {
           if (states.contains(WidgetState.hovered) &&
               widget.options.hoverElevation != null) {
             return widget.options.hoverElevation!;
@@ -236,9 +238,9 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
     );
 
     if ((widget.icon != null || widget.iconData != null) && !loading) {
-      Widget icon = widget.icon ??
+      final icon = widget.icon ??
           FaIcon(
-            widget.iconData!,
+            widget.iconData,
             size: widget.options.iconSize,
             color: widget.options.iconColor,
           );
@@ -255,7 +257,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
                 widget.options.borderRadius ?? BorderRadius.circular(8),
           ),
           child: IconButton(
-            splashRadius: 1.0,
+            splashRadius: 1,
             icon: Padding(
               padding: widget.options.iconPadding ?? EdgeInsets.zero,
               child: icon,
@@ -304,7 +306,6 @@ extension _WithoutColorExtension on TextStyle {
   /// Returns a new [TextStyle] object without the color property.
   TextStyle withoutColor() => TextStyle(
         inherit: inherit,
-        color: null,
         backgroundColor: backgroundColor,
         fontSize: fontSize,
         fontWeight: fontWeight,
@@ -331,7 +332,11 @@ extension _WithoutColorExtension on TextStyle {
 }
 
 // Slightly hacky method of getting the layout width of the provided text.
-double? _getTextWidth(String? text, TextStyle? style, int maxLines) =>
+double? _getTextWidth(
+  final String? text,
+  final TextStyle? style,
+  final int maxLines,
+) =>
     text != null
         ? (TextPainter(
             text: TextSpan(text: text, style: style),

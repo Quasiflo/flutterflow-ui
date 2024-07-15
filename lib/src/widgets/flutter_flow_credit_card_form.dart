@@ -22,9 +22,9 @@ class FlutterFlowCreditCardForm extends StatefulWidget {
   /// - [spacing] is the spacing between form fields.
   /// - [inputDecoration] is the decoration for the form fields.
   const FlutterFlowCreditCardForm({
-    super.key,
     required this.formKey,
     required this.creditCardModel,
+    super.key,
     this.obscureNumber = false,
     this.obscureCvv = false,
     this.textStyle,
@@ -78,12 +78,21 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
       _cvvCodeController.text = widget.creditCardModel.cvvCode;
     }
     cvvFocusNode.addListener(textFieldFocusDidChange);
-    _cardNumberController.addListener(() => setState(
-        () => widget.creditCardModel.cardNumber = _cardNumberController.text));
-    _expiryDateController.addListener(() => setState(
-        () => widget.creditCardModel.expiryDate = _expiryDateController.text));
-    _cvvCodeController.addListener(() => setState(
-        () => widget.creditCardModel.cvvCode = _cvvCodeController.text));
+    _cardNumberController.addListener(
+      () => setState(
+        () => widget.creditCardModel.cardNumber = _cardNumberController.text,
+      ),
+    );
+    _expiryDateController.addListener(
+      () => setState(
+        () => widget.creditCardModel.expiryDate = _expiryDateController.text,
+      ),
+    );
+    _cvvCodeController.addListener(
+      () => setState(
+        () => widget.creditCardModel.cvvCode = _cvvCodeController.text,
+      ),
+    );
   }
 
   @override
@@ -94,12 +103,12 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
   }
 
   @override
-  Widget build(BuildContext context) => Form(
+  Widget build(final BuildContext context) => Form(
         key: widget.formKey,
         child: Column(
           children: <Widget>[
             Container(
-              margin: const EdgeInsets.only(top: 12.0),
+              margin: const EdgeInsets.only(top: 12),
               child: TextFormField(
                 obscureText: widget.obscureNumber,
                 controller: _cardNumberController,
@@ -114,7 +123,7 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
                 ),
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
-                validator: (value) {
+                validator: (final value) {
                   // Validate less that 13 digits +3 white spaces
                   if (value == null || value.isEmpty || value.length < 16) {
                     return 'Please input a valid number';
@@ -129,7 +138,7 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
               children: <Widget>[
                 Expanded(
                   child: Container(
-                    margin: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                    margin: const EdgeInsets.only(top: 8, bottom: 8),
                     child: TextFormField(
                       controller: _expiryDateController,
                       focusNode: expiryDateNode,
@@ -145,16 +154,16 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
                       ),
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
-                      validator: (value) {
+                      validator: (final value) {
                         if (value == null || value.isEmpty) {
                           return 'Please input a valid date';
                         }
 
-                        final DateTime now = DateTime.now();
-                        final List<String> date = value.split(RegExp(r'/'));
-                        final int month = int.parse(date.first);
-                        final int year = int.parse('20\${date.last}');
-                        final DateTime cardDate = DateTime(year, month);
+                        final now = DateTime.now();
+                        final date = value.split(RegExp('/'));
+                        final month = int.parse(date.first);
+                        final year = int.parse(r'20${date.last}');
+                        final cardDate = DateTime(year, month);
 
                         if (cardDate.isBefore(now) ||
                             month > 12 ||
@@ -166,10 +175,10 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 16.0),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Container(
-                    margin: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                    margin: const EdgeInsets.only(top: 8, bottom: 8),
                     child: TextFormField(
                       obscureText: widget.obscureCvv,
                       focusNode: cvvFocusNode,
@@ -183,7 +192,7 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
                       ),
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
-                      validator: (value) {
+                      validator: (final value) {
                         if (value == null ||
                             value.isEmpty ||
                             value.length < 3) {
@@ -216,7 +225,7 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
       <String>['6011'],
       <String>['622126', '622925'],
       <String>['644', '649'],
-      <String>['65']
+      <String>['65'],
     },
     CardType.mastercard: <List<String>>{
       <String>['51', '55'],
@@ -230,20 +239,20 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
 
   /// This function determines the Credit Card type based on the cardPatterns
   /// and returns it.
-  CardType detectCCType(String cardNumber) {
+  CardType detectCCType(final String cardNumber) {
     //Default card type is other
-    CardType cardType = CardType.otherBrand;
+    var cardType = CardType.otherBrand;
 
     if (cardNumber.isEmpty) {
       return cardType;
     }
 
     cardNumPatterns.forEach(
-      (type, patterns) {
+      (final type, final patterns) {
         for (final patternRange in patterns) {
           // Remove any spaces
-          String ccPatternStr = cardNumber.replaceAll(RegExp(r's+\b|\bs'), '');
-          final int rangeLen = patternRange[0].length;
+          var ccPatternStr = cardNumber.replaceAll(RegExp(r's+\b|\bs'), '');
+          final rangeLen = patternRange[0].length;
           // Trim the Credit Card number string to match the pattern prefix length
           if (rangeLen < cardNumber.length) {
             ccPatternStr = ccPatternStr.substring(0, rangeLen);
@@ -253,9 +262,9 @@ class _FlutterFlowCreditCardFormState extends State<FlutterFlowCreditCardForm> {
             // Convert the prefix range into numbers then make sure the
             // Credit Card num is in the pattern range.
             // Because Strings don't have '>=' type operators
-            final int ccPrefixAsInt = int.parse(ccPatternStr);
-            final int startPatternPrefixAsInt = int.parse(patternRange[0]);
-            final int endPatternPrefixAsInt = int.parse(patternRange[1]);
+            final ccPrefixAsInt = int.parse(ccPatternStr);
+            final startPatternPrefixAsInt = int.parse(patternRange[0]);
+            final endPatternPrefixAsInt = int.parse(patternRange[1]);
             if (ccPrefixAsInt >= startPatternPrefixAsInt &&
                 ccPrefixAsInt <= endPatternPrefixAsInt) {
               // Found a match

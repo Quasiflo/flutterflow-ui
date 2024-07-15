@@ -1,17 +1,19 @@
-import 'dart:io';
+// ignore_for_file: avoid_print
 
+import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutterflow_ui/src/extras.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// A widget that displays a banner ad.
 class FlutterFlowAdBanner extends StatefulWidget {
   const FlutterFlowAdBanner({
+    required this.showsTestAd,
     super.key,
     this.width,
     this.height,
-    required this.showsTestAd,
     this.iOSAdUnitID,
     this.androidAdUnitID,
   });
@@ -45,28 +47,28 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
   void initState() {
     super.initState();
 
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _createAnchoredBanner(context);
+    SchedulerBinding.instance.addPostFrameCallback((final _) async {
+      await _createAnchoredBanner(context);
     });
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     super.dispose();
-    _anchoredBanner?.dispose();
+    await _anchoredBanner?.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    var loadingText = 'Ad Loading... \\n\\n';
+  Widget build(final BuildContext context) {
+    var loadingText = r'Ad Loading... \n\n';
     if (widget.showsTestAd) {
       loadingText +=
           'If this takes a long time, you may have to check whether the ad is '
           'being covered from a parent widget. For example, a larger width than '
           'the device screen size or a large border radius encompassing the ad banner '
-          'may stop ads from loading.\\n\\n'
+          'may stop ads from loading.\n\n'
           'If a full-width banner is desired for your app, leave the width and '
-          'height of the AdBanner widget empty. AdBanner will automatically'
+          'height of the AdBanner widget empty. AdBanner will automatically '
           'match the size of the banner to the device screen.';
     }
 
@@ -82,11 +84,11 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
             color: Colors.black,
             alignment: Alignment.center,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               child: Text(
                 loadingText,
                 style: const TextStyle(
-                  fontSize: 10.0,
+                  fontSize: 10,
                   color: Colors.white,
                 ),
               ),
@@ -95,8 +97,8 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
   }
 
   /// Creates an anchored banner ad.
-  Future _createAnchoredBanner(BuildContext context) async {
-    final AdSize? size = widget.width != null && widget.height != null
+  Future<void> _createAnchoredBanner(final BuildContext context) async {
+    final size = widget.width != null && widget.height != null
         ? AdSize(
             height: widget.height!.toInt(),
             width: widget.width!.toInt(),
@@ -109,12 +111,14 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
           );
 
     if (size == null) {
-      print('Unable to get size of anchored banner.');
+      if (flutterflowPrintDebug) {
+        print('Unable to get size of anchored banner.');
+      }
       return;
     }
 
     final isAndroid = !kIsWeb && Platform.isAndroid;
-    final BannerAd banner = BannerAd(
+    final banner = BannerAd(
       size: size,
       request: request,
       adUnitId: widget.showsTestAd
@@ -125,18 +129,30 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
               ? widget.androidAdUnitID!
               : widget.iOSAdUnitID!,
       listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          print('\$BannerAd loaded.');
+        onAdLoaded: (final ad) {
+          if (flutterflowPrintDebug) {
+            print(r'$BannerAd loaded.');
+          }
           if (mounted) {
             setState(() => _anchoredBanner = ad as BannerAd);
           }
         },
-        onAdFailedToLoad: (ad, error) {
-          print('\$BannerAd failedToLoad: \$error');
+        onAdFailedToLoad: (final ad, final error) {
+          if (flutterflowPrintDebug) {
+            print(r'$BannerAd failedToLoad: $error');
+          }
           ad.dispose();
         },
-        onAdOpened: (ad) => print('\$BannerAd onAdOpened.'),
-        onAdClosed: (ad) => print('\$BannerAd onAdClosed.'),
+        onAdOpened: (final ad) {
+          if (flutterflowPrintDebug) {
+            print(r'$BannerAd onAdOpened.');
+          }
+        },
+        onAdClosed: (final ad) {
+          if (flutterflowPrintDebug) {
+            print(r'$BannerAd onAdClosed.');
+          }
+        },
       ),
     );
     await banner.load();

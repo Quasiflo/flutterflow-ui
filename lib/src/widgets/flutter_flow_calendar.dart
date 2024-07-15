@@ -3,8 +3,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-DateTime kFirstDay = DateTime(1970, 1, 1);
-DateTime kLastDay = DateTime(2100, 1, 1);
+DateTime kFirstDay = DateTime(1970);
+DateTime kLastDay = DateTime(2100);
 
 extension DateTimeExtension on DateTime {
   DateTime get startOfDay => DateTime(year, month, day);
@@ -59,8 +59,8 @@ class FlutterFlowCalendar extends StatefulWidget {
   /// - `rowHeight` parameter specifies the height of each row in the calendar.
   /// - `locale` parameter specifies the locale to be used for formatting dates.
   const FlutterFlowCalendar({
-    super.key,
     required this.color,
+    super.key,
     this.onChange,
     this.initialDate,
     this.weekFormat = false,
@@ -137,7 +137,7 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
       end: selectedDay.endOfDay,
     );
     SchedulerBinding.instance
-        .addPostFrameCallback((_) => setSelectedDay(selectedRange.start));
+        .addPostFrameCallback((final _) => setSelectedDay(selectedRange.start));
   }
 
   CalendarFormat get calendarFormat =>
@@ -154,8 +154,8 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
   Color get lighterColor => widget.color.withOpacity(0.60);
 
   void setSelectedDay(
-    DateTime? newSelectedDay, [
-    DateTime? newSelectedEnd,
+    final DateTime? newSelectedDay, [
+    final DateTime? newSelectedEnd,
   ]) {
     final newRange = newSelectedDay == null
         ? null
@@ -166,15 +166,12 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
     setState(() {
       selectedDay = newSelectedDay ?? selectedDay;
       selectedRange = newRange ?? selectedRange;
-      if (widget.onChange != null) {
-        widget.onChange!(newRange);
-      }
+      widget.onChange?.call(newRange);
     });
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+  Widget build(final BuildContext context) => Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -196,9 +193,9 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
             locale: widget.locale,
             twoRowHeader: widget.twoRowHeader,
           ),
-          TableCalendar(
+          TableCalendar<dynamic>(
             focusedDay: focusedDay,
-            selectedDayPredicate: (date) => isSameDay(selectedDay, date),
+            selectedDayPredicate: (final date) => isSameDay(selectedDay, date),
             firstDay: kFirstDay,
             lastDay: kLastDay,
             calendarFormat: calendarFormat,
@@ -208,15 +205,15 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
             calendarStyle: CalendarStyle(
               defaultTextStyle:
                   widget.dateStyle ?? const TextStyle(color: Color(0xFF5A5A5A)),
-              weekendTextStyle: widget.dateStyle ??
-                  const TextStyle(color: Color(0xFF5A5A5A)),
-              holidayTextStyle: widget.dateStyle ??
-                  const TextStyle(color: Color(0xFF5C6BC0)),
+              weekendTextStyle:
+                  widget.dateStyle ?? const TextStyle(color: Color(0xFF5A5A5A)),
+              holidayTextStyle:
+                  widget.dateStyle ?? const TextStyle(color: Color(0xFF5C6BC0)),
               selectedTextStyle:
-                  const TextStyle(color: Color(0xFFFAFAFA), fontSize: 16.0)
+                  const TextStyle(color: Color(0xFFFAFAFA), fontSize: 16)
                       .merge(widget.selectedDateStyle),
               todayTextStyle:
-                  const TextStyle(color: Color(0xFFFAFAFA), fontSize: 16.0)
+                  const TextStyle(color: Color(0xFFFAFAFA), fontSize: 16)
                       .merge(widget.selectedDateStyle),
               outsideTextStyle: const TextStyle(color: Color(0xFF9E9E9E))
                   .merge(widget.inactiveDateStyle),
@@ -233,7 +230,6 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
                 shape: BoxShape.circle,
               ),
               markersMaxCount: 3,
-              canMarkersOverflow: true,
             ),
             availableGestures: AvailableGestures.horizontalSwipe,
             startingDayOfWeek: startingDayOfWeek,
@@ -243,12 +239,12 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
               weekendStyle: const TextStyle(color: Color(0xFF616161))
                   .merge(widget.dayOfWeekStyle),
             ),
-            onPageChanged: (focused) {
+            onPageChanged: (final focused) {
               if (focusedDay.startOfDay != focused.startOfDay) {
                 setState(() => focusedDay = focused);
               }
             },
-            onDaySelected: (newSelectedDay, focused) {
+            onDaySelected: (final newSelectedDay, final focused) {
               if (!isSameDay(selectedDay, newSelectedDay)) {
                 setSelectedDay(newSelectedDay);
                 if (focusedDay.startOfDay != focused.startOfDay) {
@@ -263,11 +259,11 @@ class _FlutterFlowCalendarState extends State<FlutterFlowCalendar> {
 
 class CalendarHeader extends StatelessWidget {
   const CalendarHeader({
-    super.key,
     required this.focusedDay,
     required this.onLeftChevronTap,
     required this.onRightChevronTap,
     required this.onTodayButtonTap,
+    super.key,
     this.iconColor,
     this.titleStyle,
     this.locale,
@@ -284,9 +280,9 @@ class CalendarHeader extends StatelessWidget {
   final bool twoRowHeader;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(final BuildContext context) => Container(
         decoration: const BoxDecoration(),
-        margin: const EdgeInsets.all(0),
+        margin: EdgeInsets.zero,
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: twoRowHeader ? _buildTwoRowHeader() : _buildOneRowHeader(),
       );
@@ -294,14 +290,12 @@ class CalendarHeader extends StatelessWidget {
   Widget _buildTwoRowHeader() => Column(
         children: [
           Row(
-            mainAxisSize: MainAxisSize.max,
             children: [
               const SizedBox(width: 16),
               _buildDateWidget(),
             ],
           ),
           Row(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.end,
             children: _buildCustomIconButtons(),
           ),
@@ -309,7 +303,6 @@ class CalendarHeader extends StatelessWidget {
       );
 
   Widget _buildOneRowHeader() => Row(
-        mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           const SizedBox(width: 16),
           _buildDateWidget(),
@@ -342,9 +335,9 @@ class CalendarHeader extends StatelessWidget {
 
 class CustomIconButton extends StatelessWidget {
   const CustomIconButton({
-    super.key,
     required this.icon,
     required this.onTap,
+    super.key,
     this.margin = const EdgeInsets.symmetric(horizontal: 4),
     this.padding = const EdgeInsets.all(10),
   });
@@ -355,7 +348,7 @@ class CustomIconButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(final BuildContext context) => Padding(
         padding: margin,
         child: InkWell(
           onTap: onTap,
@@ -372,15 +365,12 @@ class CustomIconButton extends StatelessWidget {
       );
 }
 
-DateTime _previousWeek(DateTime week) {
-  return week.subtract(const Duration(days: 7));
-}
+DateTime _previousWeek(final DateTime week) =>
+    week.subtract(const Duration(days: 7));
 
-DateTime _nextWeek(DateTime week) {
-  return week.add(const Duration(days: 7));
-}
+DateTime _nextWeek(final DateTime week) => week.add(const Duration(days: 7));
 
-DateTime _previousMonth(DateTime month) {
+DateTime _previousMonth(final DateTime month) {
   if (month.month == 1) {
     return DateTime(month.year - 1, 12);
   } else {
@@ -388,9 +378,9 @@ DateTime _previousMonth(DateTime month) {
   }
 }
 
-DateTime _nextMonth(DateTime month) {
+DateTime _nextMonth(final DateTime month) {
   if (month.month == 12) {
-    return DateTime(month.year + 1, 1);
+    return DateTime(month.year + 1);
   } else {
     return DateTime(month.year, month.month + 1);
   }

@@ -25,6 +25,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutterflow_ui/src/utils/form_field_controller.dart';
 
@@ -32,18 +33,18 @@ import 'package:flutterflow_ui/src/utils/form_field_controller.dart';
 class FlutterFlowRadioButton extends StatefulWidget {
   /// Creates a [FlutterFlowRadioButton].
   const FlutterFlowRadioButton({
-    super.key,
     required this.options,
     required this.onChanged,
     required this.controller,
     required this.optionHeight,
     required this.textStyle,
+    required this.radioButtonColor,
+    super.key,
     this.optionWidth,
     this.selectedTextStyle,
     this.textPadding = EdgeInsets.zero,
     this.buttonPosition = RadioButtonPosition.left,
     this.direction = Axis.vertical,
-    required this.radioButtonColor,
     this.inactiveRadioButtonColor,
     this.toggleable = false,
     this.horizontalAlignment = WrapAlignment.start,
@@ -54,7 +55,7 @@ class FlutterFlowRadioButton extends StatefulWidget {
   final List<String> options;
 
   /// A callback function that will be called when the selected option changes.
-  final Function(String?)? onChanged;
+  final FutureOr<void> Function(String?)? onChanged;
 
   /// A form field controller that manages the state of the selected option.
   final FormFieldController<String> controller;
@@ -117,7 +118,7 @@ class _FlutterFlowRadioButtonState extends State<FlutterFlowRadioButton> {
   }
 
   @override
-  void didUpdateWidget(FlutterFlowRadioButton oldWidget) {
+  void didUpdateWidget(final FlutterFlowRadioButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     final oldWidgetEnabled = oldWidget.onChanged != null;
     if (oldWidgetEnabled != enabled) {
@@ -128,7 +129,7 @@ class _FlutterFlowRadioButtonState extends State<FlutterFlowRadioButton> {
 
   void _maybeSetOnChangedListener() {
     if (enabled) {
-      _listener = () => widget.onChanged!(controller.value);
+      _listener = () async => widget.onChanged!(controller.value);
       controller.addListener(_listener!);
     }
   }
@@ -144,29 +145,27 @@ class _FlutterFlowRadioButtonState extends State<FlutterFlowRadioButton> {
       widget.options.isEmpty ? ['[Option]'] : widget.options;
 
   @override
-  Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context)
-          .copyWith(unselectedWidgetColor: widget.inactiveRadioButtonColor),
-      child: RadioGroup<String>.builder(
-        direction: widget.direction,
-        groupValue: controller.value,
-        onChanged: enabled ? (value) => controller.value = value : null,
-        activeColor: widget.radioButtonColor,
-        toggleable: widget.toggleable,
-        textStyle: widget.textStyle,
-        selectedTextStyle: widget.selectedTextStyle ?? widget.textStyle,
-        textPadding: widget.textPadding,
-        optionHeight: widget.optionHeight,
-        optionWidth: widget.optionWidth,
-        horizontalAlignment: widget.horizontalAlignment,
-        verticalAlignment: widget.verticalAlignment,
-        items: effectiveOptions,
-        itemBuilder: (item) =>
-            RadioButtonBuilder(item, buttonPosition: widget.buttonPosition),
-      ),
-    );
-  }
+  Widget build(final BuildContext context) => Theme(
+        data: Theme.of(context)
+            .copyWith(unselectedWidgetColor: widget.inactiveRadioButtonColor),
+        child: RadioGroup<String>.builder(
+          direction: widget.direction,
+          groupValue: controller.value,
+          onChanged: enabled ? (final value) => controller.value = value : null,
+          activeColor: widget.radioButtonColor,
+          toggleable: widget.toggleable,
+          textStyle: widget.textStyle,
+          selectedTextStyle: widget.selectedTextStyle ?? widget.textStyle,
+          textPadding: widget.textPadding,
+          optionHeight: widget.optionHeight,
+          optionWidth: widget.optionWidth,
+          horizontalAlignment: widget.horizontalAlignment,
+          verticalAlignment: widget.verticalAlignment,
+          items: effectiveOptions,
+          itemBuilder: (final item) =>
+              RadioButtonBuilder(item, buttonPosition: widget.buttonPosition),
+        ),
+      );
 }
 
 enum RadioButtonPosition {
@@ -186,7 +185,6 @@ class RadioButtonBuilder<T> {
 
 class RadioButton<T> extends StatelessWidget {
   const RadioButton({
-    super.key,
     required this.description,
     required this.value,
     required this.groupValue,
@@ -197,6 +195,7 @@ class RadioButton<T> extends StatelessWidget {
     required this.textStyle,
     required this.selectedTextStyle,
     required this.textPadding,
+    super.key,
     this.shouldFlex = false,
   });
 
@@ -213,7 +212,7 @@ class RadioButton<T> extends StatelessWidget {
   final bool shouldFlex;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final selectedStyle = selectedTextStyle;
     final isSelected = value == groupValue;
     Widget radioButtonText = Padding(
@@ -248,7 +247,6 @@ class RadioButton<T> extends StatelessWidget {
 
 class RadioGroup<T> extends StatelessWidget {
   const RadioGroup.builder({
-    super.key,
     required this.groupValue,
     required this.onChanged,
     required this.items,
@@ -261,13 +259,14 @@ class RadioGroup<T> extends StatelessWidget {
     required this.textStyle,
     required this.selectedTextStyle,
     required this.textPadding,
+    super.key,
     this.optionWidth,
     this.verticalAlignment = WrapCrossAlignment.center,
   });
 
   final T? groupValue;
   final List<T> items;
-  final RadioButtonBuilder Function(T value) itemBuilder;
+  final RadioButtonBuilder<T> Function(T value) itemBuilder;
   final void Function(T?)? onChanged;
   final Axis direction;
   final double optionHeight;
@@ -281,7 +280,7 @@ class RadioGroup<T> extends StatelessWidget {
   final EdgeInsetsGeometry textPadding;
 
   List<Widget> get _group => items.map(
-        (item) {
+        (final item) {
           final radioButtonBuilder = itemBuilder(item);
           return SizedBox(
             height: optionHeight,
@@ -304,7 +303,7 @@ class RadioGroup<T> extends StatelessWidget {
       ).toList();
 
   @override
-  Widget build(BuildContext context) => direction == Axis.horizontal
+  Widget build(final BuildContext context) => direction == Axis.horizontal
       ? Wrap(
           direction: direction,
           alignment: horizontalAlignment,

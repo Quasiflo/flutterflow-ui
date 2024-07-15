@@ -4,10 +4,10 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 Widget wrapWithModel<T extends FlutterFlowModel>({
-  required T model,
-  required Widget child,
-  required VoidCallback updateCallback,
-  bool updateOnChange = false,
+  required final T model,
+  required final Widget child,
+  required final VoidCallback updateCallback,
+  final bool updateOnChange = false,
 }) {
   // Set the component to optionally update the page on updates.
   model
@@ -27,8 +27,8 @@ Widget wrapWithModel<T extends FlutterFlowModel>({
 }
 
 T createModel<T extends FlutterFlowModel>(
-  BuildContext context,
-  T Function() defaultBuilder,
+  final BuildContext context,
+  final T Function() defaultBuilder,
 ) {
   final model = context.read<T?>() ?? defaultBuilder()
     .._init(context);
@@ -38,8 +38,8 @@ T createModel<T extends FlutterFlowModel>(
 abstract class FlutterFlowModel<W extends Widget> {
   // Initialization methods
   bool _isInitialized = false;
-  void initState(BuildContext context);
-  void _init(BuildContext context) {
+  void initState(final BuildContext context);
+  void _init(final BuildContext context) {
     if (!_isInitialized) {
       initState(context);
       _isInitialized = true;
@@ -76,14 +76,14 @@ abstract class FlutterFlowModel<W extends Widget> {
   VoidCallback _updateCallback = () {};
   void onUpdate() => updateOnChange ? _updateCallback() : () {};
   FlutterFlowModel setOnUpdate({
-    bool updateOnChange = false,
-    required VoidCallback onUpdate,
+    required final VoidCallback onUpdate,
+    final bool updateOnChange = false,
   }) =>
       this
         .._updateCallback = onUpdate
         ..updateOnChange = updateOnChange;
   // Update the containing page when this model received an update.
-  void updatePage(VoidCallback callback) {
+  void updatePage(final VoidCallback callback) {
     callback();
     _updateCallback();
   }
@@ -97,38 +97,45 @@ class FlutterFlowDynamicModels<T extends FlutterFlowModel> {
   final Map<String, int> _childrenIndexes = {};
   Set<String>? _activeKeys;
 
-  T getModel(String uniqueKey, int index) {
+  T getModel(final String uniqueKey, final int index) {
     _updateActiveKeys(uniqueKey);
     _childrenIndexes[uniqueKey] = index;
     return _childrenModels[uniqueKey] ??= defaultBuilder();
   }
 
-  List<S> getValues<S>(S? Function(T) getValue) {
-    return _childrenIndexes.entries
-        // Sort keys by index.
-        .sorted((a, b) => a.value.compareTo(b.value))
-        .where((e) => _childrenModels[e.key] != null)
-        // Map each model to the desired value and return as list. In order
-        // to preserve index order, rather than removing null values we provide
-        // default values (for types with reasonable defaults).
-        .map((e) => getValue(_childrenModels[e.key]!) ?? _getDefaultValue<S>()!)
-        .toList();
-  }
+  List<S> getValues<S>(final S? Function(T) getValue) => _childrenIndexes
+      .entries
+      // Sort keys by index.
+      .sorted((final a, final b) => a.value.compareTo(b.value))
+      .where((final e) => _childrenModels[e.key] != null)
+      // Map each model to the desired value and return as list. In order
+      // to preserve index order, rather than removing null values we provide
+      // default values (for types with reasonable defaults).
+      .map(
+        (final e) =>
+            getValue(_childrenModels[e.key]!) ?? _getDefaultValue<S>()!,
+      )
+      .toList();
 
-  S? getValueAtIndex<S>(int index, S? Function(T) getValue) {
-    final uniqueKey =
-        _childrenIndexes.entries.firstWhereOrNull((e) => e.value == index)?.key;
+  S? getValueAtIndex<S>(final int index, final S? Function(T) getValue) {
+    final uniqueKey = _childrenIndexes.entries
+        .firstWhereOrNull((final e) => e.value == index)
+        ?.key;
     return getValueForKey(uniqueKey, getValue);
   }
 
-  S? getValueForKey<S>(String? uniqueKey, S? Function(T) getValue) {
+  S? getValueForKey<S>(final String? uniqueKey, final S? Function(T) getValue) {
     final model = _childrenModels[uniqueKey];
     return model != null ? getValue(model) : null;
   }
 
-  void dispose() => _childrenModels.values.forEach((model) => model.dispose());
+  void dispose() {
+    for (final model in _childrenModels.values) {
+      model.dispose();
+    }
+  }
 
-  void _updateActiveKeys(String uniqueKey) {
+  void _updateActiveKeys(final String uniqueKey) {
     final shouldResetActiveKeys = _activeKeys == null;
     _activeKeys ??= {};
     _activeKeys!.add(uniqueKey);
@@ -137,14 +144,15 @@ class FlutterFlowDynamicModels<T extends FlutterFlowModel> {
       // Add a post-frame callback to remove and dispose of unused models after
       // we're done building, then reset `_activeKeys` to null so we know to do
       // this again next build.
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _childrenIndexes.removeWhere((k, _) => !_activeKeys!.contains(k));
+      SchedulerBinding.instance.addPostFrameCallback((final _) {
+        _childrenIndexes
+            .removeWhere((final k, final _) => !_activeKeys!.contains(k));
         _childrenModels.keys
             .toSet()
             .difference(_activeKeys!)
             // Remove and dispose of unused models since they are  not being used
             // elsewhere and would not otherwise be disposed.
-            .forEach((k) => _childrenModels.remove(k)?.maybeDispose());
+            .forEach((final k) => _childrenModels.remove(k)?.maybeDispose());
         _activeKeys = null;
       });
     }
@@ -167,6 +175,6 @@ T? _getDefaultValue<T>() {
 }
 
 extension TextValidationExtensions on String? Function(BuildContext, String?)? {
-  String? Function(String?)? asValidator(BuildContext context) =>
-      this != null ? (val) => this!(context, val) : null;
+  String? Function(String?)? asValidator(final BuildContext context) =>
+      this != null ? (final val) => this!(context, val) : null;
 }

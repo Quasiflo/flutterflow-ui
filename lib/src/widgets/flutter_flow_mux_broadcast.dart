@@ -1,15 +1,13 @@
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
-import 'flutter_flow_widgets.dart';
+import 'package:flutterflow_ui/src/widgets/flutter_flow_widgets.dart';
 
 /// A widget that helps to create a live stream using the Mux API.
 class FlutterFlowMuxBroadcast extends StatefulWidget {
   const FlutterFlowMuxBroadcast({
-    super.key,
     required this.isCameraInitialized,
     required this.isStreaming,
     required this.durationString,
-    this.borderRadius = BorderRadius.zero,
     required this.controller,
     required this.videoConfig,
     required this.onCameraRotateButtonTap,
@@ -22,14 +20,16 @@ class FlutterFlowMuxBroadcast extends StatefulWidget {
     required this.liveTextStyle,
     required this.liveIcon,
     required this.liveTextBackgroundColor,
-    this.liveContainerBorderRadius = BorderRadius.zero,
     required this.durationTextStyle,
     required this.durationTextBackgroundColor,
-    this.durationContainerBorderRadius = BorderRadius.zero,
     required this.rotateButtonIcon,
     required this.rotateButtonColor,
     required this.stopButtonColor,
     required this.stopButtonIcon,
+    super.key,
+    this.borderRadius = BorderRadius.zero,
+    this.liveContainerBorderRadius = BorderRadius.zero,
+    this.durationContainerBorderRadius = BorderRadius.zero,
   });
 
   /// Whether the camera is initialized or not.
@@ -125,7 +125,7 @@ class _FlutterFlowMuxBroadcastState extends State<FlutterFlowMuxBroadcast>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  Future<void> didChangeAppLifecycleState(final AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.inactive) {
       final isStreaming = widget.controller?.isStreaming ?? false;
@@ -134,128 +134,125 @@ class _FlutterFlowMuxBroadcastState extends State<FlutterFlowMuxBroadcast>
       }
       widget.controller?.stop();
     } else if (state == AppLifecycleState.resumed) {
-      widget.controller?.startPreview();
+      await widget.controller?.startPreview();
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return widget.isCameraInitialized
-        ? ClipRRect(
-            borderRadius: widget.borderRadius,
-            child: CameraPreview(
-              controller: widget.controller!,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
-                  top: 16.0,
-                  bottom: 16.0,
-                ),
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: widget.isStreaming
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: InkWell(
-                                    onTap: () => widget.onStopButtonTap(),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: widget.stopButtonColor,
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: widget.stopButtonIcon,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                InkWell(
-                                  onTap: () => widget.onCameraRotateButtonTap(),
-                                  child: CircleAvatar(
-                                    radius:
-                                        (widget.rotateButtonIcon as Icon).size,
-                                    backgroundColor: widget.rotateButtonColor,
-                                    child: Center(
-                                      child: widget.rotateButtonIcon,
-                                    ),
-                                  ),
-                                ),
-                                FFButtonWidget(
-                                  onPressed: () => widget.onStartButtonTap(),
-                                  text: widget.startButtonText,
-                                  icon: widget.startButtonIcon,
-                                  options: widget.startButtonOptions,
-                                )
-                              ],
-                            ),
-                    ),
-                    widget.isStreaming
+  Widget build(final BuildContext context) => widget.isCameraInitialized
+      ? ClipRRect(
+          borderRadius: widget.borderRadius,
+          child: CameraPreview(
+            controller: widget.controller!,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 16,
+              ),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: widget.isStreaming
                         ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: widget.liveTextBackgroundColor,
-                                  borderRadius:
-                                      widget.liveContainerBorderRadius,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      widget.liveIcon,
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        widget.liveText,
-                                        style: widget.liveTextStyle,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: widget.durationTextBackgroundColor,
-                                  borderRadius:
-                                      widget.durationContainerBorderRadius,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  child: Text(
-                                    widget.durationString ?? '00:00:00',
-                                    style: widget.durationTextStyle,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: InkWell(
+                                  onTap: () => widget.onStopButtonTap(),
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: widget.stopButtonColor,
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: widget.stopButtonIcon,
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           )
-                        : const SizedBox(),
-                  ],
-                ),
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              InkWell(
+                                onTap: () => widget.onCameraRotateButtonTap(),
+                                child: CircleAvatar(
+                                  radius:
+                                      (widget.rotateButtonIcon as Icon).size,
+                                  backgroundColor: widget.rotateButtonColor,
+                                  child: Center(
+                                    child: widget.rotateButtonIcon,
+                                  ),
+                                ),
+                              ),
+                              FFButtonWidget(
+                                onPressed: () => widget.onStartButtonTap(),
+                                text: widget.startButtonText,
+                                icon: widget.startButtonIcon,
+                                options: widget.startButtonOptions,
+                              ),
+                            ],
+                          ),
+                  ),
+                  if (widget.isStreaming)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: widget.liveTextBackgroundColor,
+                            borderRadius: widget.liveContainerBorderRadius,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                widget.liveIcon,
+                                const SizedBox(width: 8),
+                                Text(
+                                  widget.liveText,
+                                  style: widget.liveTextStyle,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: widget.durationTextBackgroundColor,
+                            borderRadius: widget.durationContainerBorderRadius,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Text(
+                              widget.durationString ?? '00:00:00',
+                              style: widget.durationTextStyle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    const SizedBox(),
+                ],
               ),
             ),
-          )
-        : const Center(
-            child: CircularProgressIndicator(),
-          );
-  }
+          ),
+        )
+      : const Center(
+          child: CircularProgressIndicator(),
+        );
 }

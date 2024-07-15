@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data' show Uint8List;
+import 'package:flutter/foundation.dart';
 
+@immutable
 class FFUploadedFile {
   const FFUploadedFile({
     this.name,
@@ -9,6 +10,25 @@ class FFUploadedFile {
     this.width,
     this.blurHash,
   });
+
+  factory FFUploadedFile.deserialize(final String val) {
+    final serializedData = jsonDecode(val) as Map<String, dynamic>;
+    final data = {
+      'name': serializedData['name'] ?? '',
+      'bytes': serializedData['bytes'] ?? Uint8List.fromList([]),
+      'height': serializedData['height'],
+      'width': serializedData['width'],
+      'blurHash': serializedData['blurHash'],
+    };
+    return FFUploadedFile(
+      name: data['name'] as String,
+      bytes:
+          Uint8List.fromList(data['bytes'].cast<int>().toList() as List<int>),
+      height: data['height'] as double?,
+      width: data['width'] as double?,
+      blurHash: data['blurHash'] as String?,
+    );
+  }
 
   final String? name;
   final Uint8List? bytes;
@@ -30,24 +50,6 @@ class FFUploadedFile {
         },
       );
 
-  static FFUploadedFile deserialize(String val) {
-    final serializedData = jsonDecode(val) as Map<String, dynamic>;
-    final data = {
-      'name': serializedData['name'] ?? '',
-      'bytes': serializedData['bytes'] ?? Uint8List.fromList([]),
-      'height': serializedData['height'],
-      'width': serializedData['width'],
-      'blurHash': serializedData['blurHash'],
-    };
-    return FFUploadedFile(
-      name: data['name'] as String,
-      bytes: Uint8List.fromList(data['bytes'].cast<int>().toList()),
-      height: data['height'] as double?,
-      width: data['width'] as double?,
-      blurHash: data['blurHash'] as String?,
-    );
-  }
-
   @override
   int get hashCode => Object.hash(
         name,
@@ -58,7 +60,7 @@ class FFUploadedFile {
       );
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(final Object other) =>
       other is FFUploadedFile &&
       name == other.name &&
       bytes == other.bytes &&

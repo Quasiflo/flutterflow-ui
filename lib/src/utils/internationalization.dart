@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 class FFLocalizations {
   FFLocalizations(this.locale);
 
-  final Locale locale;
+  // Initializing
+  // ignore: avoid_unused_constructor_parameters
+  FFLocalizations.of(final BuildContext context) : locale = const Locale('en');
 
-  //Initializing
-  static FFLocalizations of(BuildContext context) =>
-      FFLocalizations(const Locale('en'));
+  final Locale locale;
 
   static List<String> languages() => ['en'];
 
@@ -19,11 +19,11 @@ class FFLocalizations {
       ? languages().indexOf(languageCode)
       : 0;
 
-  String getText(String key) =>
+  String getText(final String key) =>
       (kTranslationsMap[key] ?? {})[locale.languageCode] ?? '';
 
   String getVariableText({
-    String? enText = '',
+    final String? enText = '',
   }) =>
       [enText][languageIndex] ?? '';
 }
@@ -32,16 +32,16 @@ class FFLocalizationsDelegate extends LocalizationsDelegate<FFLocalizations> {
   const FFLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
+  bool isSupported(final Locale locale) =>
       FFLocalizations.languages().contains(locale.languageCode);
 
   @override
-  Future<FFLocalizations> load(Locale locale) =>
+  Future<FFLocalizations> load(final Locale locale) =>
       SynchronousFuture<FFLocalizations>(FFLocalizations(locale));
 
   @override
-  bool shouldReload(FFLocalizationsDelegate old) => false;
+  bool shouldReload(final FFLocalizationsDelegate old) => false;
 }
 
-final kTranslationsMap =
-    <Map<String, Map<String, String>>>[].reduce((a, b) => a..addAll(b));
+final kTranslationsMap = <Map<String, Map<String, String>>>[]
+    .reduce((final a, final b) => a..addAll(b));
