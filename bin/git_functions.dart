@@ -1,8 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:io';
-import './flutterflow_merge.dart';
 import './utils.dart';
+import 'merge.dart';
 
 Future<void> stashChanges(final String message) async {
   info('Stashing local changes...');

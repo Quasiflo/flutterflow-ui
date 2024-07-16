@@ -99,3 +99,7 @@ Alternatively, you can follow similar steps as mentioned above, but click on "Vi
 
 ## Documentation & more usages
 You can check out our [documentation](https://docs.flutterflow.io/flutter/export-flutterflow-ui-code-to-your-flutter-project) for more examples.
+
+## Running the merge tool
+
+Run `flutter pub run flutterflow_ui:merge` to automagically merge from the flutterflow branch to your project.
