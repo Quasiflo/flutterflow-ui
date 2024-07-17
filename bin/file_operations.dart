@@ -2,12 +2,12 @@
 
 import 'dart:io';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import './structures.dart';
 import './utils.dart';
 
 Future<void> removeItems(
   final String destFolder,
+  final Directory rootDir,
   final List<String> ignoredItems,
   final bool removeIgnoredOrEverythingElse,
 ) async {
@@ -20,7 +20,7 @@ Future<void> removeItems(
   await for (final entity
       in directory.list(recursive: true, followLinks: false)) {
     final relativePath =
-        entity.path.replaceFirst(directory.path + Platform.pathSeparator, '');
+        entity.path.replaceFirst(rootDir.path + Platform.pathSeparator, '');
     if (removeIgnoredOrEverythingElse
         ? isIgnored(relativePath, ignoredItems)
         : !isIgnored(relativePath, ignoredItems)) {
@@ -28,12 +28,9 @@ Future<void> removeItems(
         if (entity is File) {
           // info('Deleting file: ${entity.path}');
           await entity.delete();
-        } else if (entity is Directory) {
-          // info('Deleting directory: ${entity.path}');
-          await entity.delete(recursive: true);
         }
       } on FileSystemException catch (e) {
-        fatalError('Failed to delete ${entity.path}: $e');
+        info('Failed to delete ${entity.path}: $e');
       }
     }
   }
@@ -41,8 +38,7 @@ Future<void> removeItems(
 
 Future<void> moveTargetsToTempFolder(final List<String> targets) async {
   // Get the temporary directory path
-  final tempDir =
-      path.join((await getTemporaryDirectory()).path, 'flutterflow_merge');
+  final tempDir = path.join(Directory.systemTemp.path, 'flutterflow_merge');
 
   // Remove existing temporary folder if it exists
   if (await Directory(tempDir).exists()) {
@@ -57,25 +53,33 @@ Future<void> moveTargetsToTempFolder(final List<String> targets) async {
 
   // Move the targets to the temporary folder
   for (final target in targets) {
-    final targetDir = Directory(target);
-    final tempTargetPath = '$tempDir/$target';
+    final targetDir = Directory(
+      path.join(Directory.current.path, target),
+    );
+    final tempTarget = Directory(path.join(tempDir, target));
 
-    // Make the temp dir
-    try {
-      await Directory(tempDir).create(recursive: true);
-    } on FileSystemException catch (e) {
-      fatalError('Failed to create temporary folder $tempDir: $e');
+    // Ensure the target directory exists before moving
+    if (!await targetDir.exists()) {
+      fatalError('Target directory does not exist: ${targetDir.path}');
+      return;
     }
-    info('Temporary folder $tempDir created successfully.');
 
-    // Move the target directory to the temporary folder
-    info('Moving $target to $tempTargetPath...');
-    try {
-      await targetDir.rename(tempTargetPath);
-    } on FileSystemException catch (e) {
-      fatalError('Failed to move $target to $tempTargetPath: $e');
+    // Ensure the target directory exists before moving
+    if (await tempTarget.exists()) {
+      info('Removing existing temp directory ${tempTarget.path}...');
+      await tempTarget.delete();
     }
-    info('$target moved to $tempTargetPath successfully.');
+
+    // Make the parent dir
+    await tempTarget.parent.create(recursive: true);
+
+    info('Moving ${targetDir.path} to ${tempTarget.path}...');
+    try {
+      await targetDir.rename(tempTarget.path);
+    } on FileSystemException catch (e) {
+      fatalError('Failed to move ${targetDir.path} to ${tempTarget.path}: $e');
+    }
+    info('${targetDir.path} moved to ${tempTarget.path} successfully.');
   }
 }
 
@@ -88,6 +92,21 @@ Future<void> runDartFix() async {
     fatalError('Failed to apply dart fixes: ${fixResult.stderr}');
   }
   info('Dart fixes applied successfully: ${fixResult.stdout}');
+}
+
+Future<void> formatAllFiles(final List<String> directories) async {
+  for (final directory in directories) {
+    // Construct the arguments for the dart format command
+    final args = ['format', directory];
+
+    // Execute the dart format command
+    final formatResult = await Process.run('dart', args);
+    if (formatResult.exitCode != 0) {
+      fatalError('Failed to format Dart files: ${formatResult.stderr}');
+    }
+  }
+
+  info('Dart files formatted successfully!');
 }
 
 Future<void> findAndReplaceInFiles(
@@ -107,7 +126,6 @@ Future<void> findAndReplaceInFiles(
         final content = await entity.readAsString();
         final updatedContent = findAndReplace(content, replacements);
         await entity.writeAsString(updatedContent);
-        info('Processed file: ${entity.path}');
       }
     }
   }
@@ -121,14 +139,14 @@ String findAndReplace(
 
   for (final replacement in replacements) {
     if (replacement.regex) {
-      final regExp = RegExp(replacement.target);
+      final regExp = RegExp(replacement.target, multiLine: true);
       resultCode = resultCode.replaceAllMapped(
         regExp,
         (final match) => replacement.replacement,
       );
     } else {
-      resultCode =
-          resultCode.replaceAll(replacement.target, replacement.replacement);
+      resultCode = resultCode.replaceAll(
+          RegExp.escape(replacement.target), replacement.replacement);
     }
   }
 
@@ -137,27 +155,52 @@ String findAndReplace(
 
 Future<void> moveMergeTargets(final List<MergeTarget> targets) async {
   for (final target in targets) {
-    final sourceDir = Directory(target.source);
-    final destinationDir = Directory(target.destination);
+    final sourceDir =
+        Directory(path.join(Directory.current.path, target.source));
+    final destinationDir =
+        Directory(path.join(Directory.current.path, target.destination));
 
     if (!await sourceDir.exists()) {
-      info('Source directory does not exist: ${target.source}');
+      info('Source directory does not exist: ${sourceDir.path}');
       continue;
     }
 
-    if (await destinationDir.exists() &&
-        !(await destinationDir.list().isEmpty)) {
-      fatalError(
-        'Destination directory already exists when not expected to: ${target.destination}',
-      );
+    // Move the source dir to a temporary location to avoid the folder into it's own subfolder move problem
+    final tempDir =
+        path.join(Directory.systemTemp.path, 'flutterflow_merge_temp_mover');
+    final tempSourceDir = Directory(path.join(tempDir, target.source));
+    if (await tempSourceDir.exists()) {
+      info('Removing existing temp source directory ${tempSourceDir.path}...');
+      await tempSourceDir.delete(recursive: true);
+    }
+
+    // Create the parent of the temp source dir
+    await tempSourceDir.parent.create(recursive: true);
+
+    // Move the source dir to the temp source dir
+    await sourceDir.rename(tempSourceDir.path);
+
+    // Create the parent of the destination dir
+    if (await destinationDir.exists()) {
+      if (!(await destinationDir.list().isEmpty)) {
+        fatalError(
+          'Destination directory already exists and is not empty: ${destinationDir.path}',
+        );
+      } else {
+        info(
+          'Destination directory already exists but is empty: ${destinationDir.path}',
+        );
+      }
+    } else {
+      await destinationDir.parent.create(recursive: true);
     }
 
     try {
-      await sourceDir.rename(target.destination);
-      info('Moved ${target.source} to ${target.destination}');
+      await tempSourceDir.rename(destinationDir.path);
+      info('Moved ${tempSourceDir.path} to ${destinationDir.path}');
     } on FileSystemException catch (e) {
       fatalError(
-        'Failed to move ${target.source} to ${target.destination}: $e',
+        'Failed to move ${tempSourceDir.path} to ${destinationDir.path}: $e',
       );
     }
   }
@@ -180,7 +223,7 @@ Future<void> wrapDartFunctionsInFiles(
         final content = await entity.readAsString();
         final updatedContent = wrapDartFunctions(content, functionWraps);
         await entity.writeAsString(updatedContent);
-        info('Processed file: ${entity.path}');
+        // info('Processed file: ${entity.path}');
       }
     }
   }
@@ -258,12 +301,12 @@ Future<void> mergeBackTargetsFromTemp(
 ) async {
   for (final target in targets) {
     final tempTargetPath = path.join(
-      (await getTemporaryDirectory()).path,
+      Directory.systemTemp.path,
       'flutterflow_merge',
-      target.destination,
+      target.source,
     );
     final tempTargetDir = Directory(tempTargetPath);
-    final destinationDir = Directory(target.destination);
+    final destinationDir = Directory(target.source);
 
     if (!await tempTargetDir.exists()) {
       info('Temporary directory does not exist: $tempTargetPath');
@@ -279,13 +322,13 @@ Future<void> mergeBackTargetsFromTemp(
         final destinationFile = File(destinationPath);
         await destinationFile.create(recursive: true);
         await entity.copy(destinationFile.path);
-        info('Merged file: ${entity.path} -> $destinationPath');
+        // info('Merged file: ${entity.path} -> $destinationPath');
       } else if (entity is Directory) {
         final destinationSubDir = Directory(destinationPath);
         if (!await destinationSubDir.exists()) {
           await destinationSubDir.create(recursive: true);
         }
-        info('Merged directory: ${entity.path} -> $destinationPath');
+        // info('Merged directory: ${entity.path} -> $destinationPath');
       }
     }
   }

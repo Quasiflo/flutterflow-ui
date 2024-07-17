@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:io';
+import './structures.dart';
 import './utils.dart';
 import 'merge.dart';
 
@@ -128,6 +129,46 @@ Future<void> checkoutFilesAndFolders(
     'Successfully checked out folders and files from $sourceBranch: ${checkoutResult.stdout}',
   );
 }
+
+// Future<void> checkoutFilesAndFolders(
+//   final String sourceBranch,
+//   final List<MergeTarget> targets,
+// ) async {
+//   for (final target in targets) {
+//     info(
+//       'Checking out ${target.source} from $sourceBranch into ${target.destination}...',
+//     );
+
+//     // Create the destination directory if it doesn't exist
+//     final destinationDir = Directory(target.destination);
+//     if (!await destinationDir.exists()) {
+//       await destinationDir.create(recursive: true);
+//     }
+
+//     // Construct the arguments for the git checkout command
+//     final args = ['checkout', sourceBranch, '--', target.source];
+
+//     // Execute the git checkout command
+//     final checkoutResult = await Process.run('git', args);
+//     if (checkoutResult.exitCode != 0) {
+//       fatalError(
+//         'Failed to checkout ${target.source} from $sourceBranch: ${checkoutResult.stderr}',
+//       );
+//       exit(1);
+//     }
+
+//     // Move the checked out file to the destination directory
+//     final sourceFile = File(target.source);
+//     final destinationFile =
+//         File(p.join(target.destination, p.basename(target.source)));
+//     if (await sourceFile.exists()) {
+//       await sourceFile.rename(destinationFile.path);
+//       print('Moved ${target.source} to ${destinationFile.path} successfully.');
+//     } else {
+//       print('Source file ${target.source} does not exist after checkout.');
+//     }
+//   }
+// }
 
 Future<void> stageAndCommitAllFiles(final String commitMessage) async {
   info('Staging all files...');

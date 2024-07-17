@@ -87,37 +87,8 @@ dev_dependencies:
   freezed_annotation: ^2.4.1
   json_annotation: ^4.9.0
   path: ^1.9.0
-  path_provider: ^2.1.3
   pubspec_yaml: ^3.1.0
   yaml: ^3.0.0
 
 flutter:
   uses-material-design: true
-
-flutterflow_merge:
-  source_branch: flutterflow
-  target_branch: specialBranch # Can be null to merge with the currently active branch
-  dart_targets:
-    - source: lib
-      destination: lib/frontend
-  other_targets:
-    - source: assets
-      destination: assets
-  ignore_items:
-    - lib/special/main.dart
-    - lib/main
-  features:
-    apply_dart_fix: true
-    void_all_showdialog_widgets: true
-    check_mounted_on_setstate: true
-  replacements:
-    - target: UserModelStruct
-      replacement: UserModel
-      regex: false
-  function_wraps:
-    - target: setState
-      leading: executeIf(mounted, () {
-      trailing: ;})
-      ignore_leadings:
-        - void
-        - super.
