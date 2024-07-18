@@ -18,7 +18,6 @@ class FlutterFlowTimerController with ChangeNotifier {
   }
 
   void onResetTimer() {
-    timer.onResetTimer();
     late final StreamSubscription<int> subscription;
     // We can't notify listeners right away: they'll see the old timer value.
     // We need to wait until the next time is emitted.
@@ -26,6 +25,7 @@ class FlutterFlowTimerController with ChangeNotifier {
       notifyListeners();
       await subscription.cancel();
     });
+    timer.onResetTimer();
   }
 
   @override
@@ -91,24 +91,25 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
 
   FutureOr<void> Function() get onEnded => widget.onEnded ?? () {};
 
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial time.
+    widget.controller.timer.setPresetTime(mSec: widget.initialTime, add: false);
+    // Initialize timer properties without updating outer state.
+    unawaited(_initTimer(shouldUpdate: false));
+  }
+
   Future<void> _initTimer({required final bool shouldUpdate}) async {
     // Initialize timer display time and last update time.
     _displayTime = widget.getDisplayTime(widget.controller.timer.rawTime.value);
     lastUpdateMs = timerValue;
     // Update timer value and display time.
-    widget.onChanged(timerValue, _displayTime, shouldUpdate);
-  }
+    await widget.onChanged(timerValue, _displayTime, shouldUpdate);
 
-  @override
-  Future<void> initState() async {
-    super.initState();
-    // Set the initial time.
-    widget.controller.timer.setPresetTime(mSec: widget.initialTime, add: false);
-    // Initialize timer properties without updating outer state.
-    await _initTimer(shouldUpdate: false);
     // Add a listener for when the timer value changes to update the
     // displayed timer value.
-    widget.controller.timer.rawTime.listen((final _) {
+    widget.controller.timer.rawTime.listen((final _) async {
       _displayTime = widget.getDisplayTime(timerValue);
       widget.onChanged(timerValue, _displayTime, _shouldUpdate());
       if (mounted) {
@@ -116,10 +117,10 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
       }
     });
     // Add listener for actions executed on timer.
-    widget.controller.addListener(() => _initTimer(shouldUpdate: true));
+    widget.controller.addListener(() async => _initTimer(shouldUpdate: true));
 
     // Add listener for when the timer ends.
-    widget.controller.timer.fetchEnded.listen((final _) => onEnded());
+    widget.controller.timer.fetchEnded.listen((final _) async => onEnded());
   }
 
   bool _shouldUpdate() {
