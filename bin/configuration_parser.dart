@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:pubspec_yaml/pubspec_yaml.dart';
 import './structures.dart';
+import './utils.dart';
 
 Future<FlutterflowMergeConfig> parseConfig() async {
   final pubspecYaml = File('pubspec.yaml').readAsStringSync().toPubspecYaml();
@@ -34,8 +35,7 @@ Future<String> getCurrentBranch() async {
   final branchResult =
       await Process.run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
   if (branchResult.exitCode != 0) {
-    print('Failed to get current branch: ${branchResult.stderr}');
-    exit(1);
+    fatalError('Failed to get current branch: ${branchResult.stderr}');
   }
   return (branchResult.stdout as String).trim();
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 
@@ -6,7 +7,6 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 class FlutterFlowTimerController with ChangeNotifier {
   FlutterFlowTimerController(this.timer);
   final StopWatchTimer timer;
-  StreamSubscription<int>? _resetSubscription;
 
   void onStartTimer() {
     timer.onStartTimer();
@@ -18,19 +18,19 @@ class FlutterFlowTimerController with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> onResetTimer() async {
-    await _resetSubscription?.cancel();
-    _resetSubscription = timer.rawTime.listen((final _) async {
-      notifyListeners();
-      await _resetSubscription?.cancel();
-      _resetSubscription = null;
-    });
+  void onResetTimer() {
     timer.onResetTimer();
+    late final StreamSubscription<int> subscription;
+    // We can't notify listeners right away: they'll see the old timer value.
+    // We need to wait until the next time is emitted.
+    subscription = timer.rawTime.listen((final _) async {
+      notifyListeners();
+      await subscription.cancel();
+    });
   }
 
   @override
   Future<void> dispose() async {
-    await _resetSubscription?.cancel();
     await timer.dispose();
     super.dispose();
   }
@@ -61,17 +61,14 @@ class FlutterFlowTimer extends StatefulWidget {
   final String Function(int) getDisplayTime;
 
   /// A callback function that is called when the timer value changes.
-  final FutureOr<void> Function(
-    int value,
-    String displayTime,
-    bool shouldUpdate,
-  ) onChanged;
+  final void Function(int value, String displayTime, bool shouldUpdate)
+      onChanged;
 
   /// The interval at which the timer state should be updated.
   final Duration? updateStateInterval;
 
   /// A callback function that is called when the timer ends.
-  final FutureOr<void> Function()? onEnded;
+  final void Function()? onEnded;
 
   /// The alignment of the timer text.
   final TextAlign textAlign;
@@ -89,11 +86,16 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
 
   late String _displayTime;
   late int lastUpdateMs;
-  StreamSubscription<int>? _rawTimeSubscription;
-  StreamSubscription<bool>? _endedSubscription;
-  late VoidCallback _controllerListener;
 
-  FutureOr<void> Function() get onEnded => widget.onEnded ?? () {};
+  void Function() get onEnded => widget.onEnded ?? () {};
+
+  void _initTimer({required final bool shouldUpdate}) {
+    // Initialize timer display time and last update time.
+    _displayTime = widget.getDisplayTime(widget.controller.timer.rawTime.value);
+    lastUpdateMs = timerValue;
+    // Update timer value and display time.
+    widget.onChanged(timerValue, _displayTime, shouldUpdate);
+  }
 
   @override
   void initState() {
@@ -101,46 +103,21 @@ class _FlutterFlowTimerState extends State<FlutterFlowTimer> {
     // Set the initial time.
     widget.controller.timer.setPresetTime(mSec: widget.initialTime, add: false);
     // Initialize timer properties without updating outer state.
-    unawaited(_initTimer(shouldUpdate: false));
-  }
-
-  Future<void> _initTimer({required final bool shouldUpdate}) async {
-    // Initialize timer display time and last update time.
-    _displayTime = widget.getDisplayTime(widget.controller.timer.rawTime.value);
-    lastUpdateMs = timerValue;
-    // Update timer value and display time.
-    await widget.onChanged(timerValue, _displayTime, shouldUpdate);
-
-    // Cancel previous subscriptions if any
-    await _rawTimeSubscription?.cancel();
-    await _endedSubscription?.cancel();
-
+    _initTimer(shouldUpdate: false);
     // Add a listener for when the timer value changes to update the
     // displayed timer value.
-    _rawTimeSubscription =
-        widget.controller.timer.rawTime.listen((final _) async {
+    widget.controller.timer.rawTime.listen((final _) {
       _displayTime = widget.getDisplayTime(timerValue);
       widget.onChanged(timerValue, _displayTime, _shouldUpdate());
       if (mounted) {
         setState(() {});
       }
     });
-
     // Add listener for actions executed on timer.
-    _controllerListener = () async => _initTimer(shouldUpdate: true);
-    widget.controller.addListener(_controllerListener);
+    widget.controller.addListener(() => _initTimer(shouldUpdate: true));
 
     // Add listener for when the timer ends.
-    _endedSubscription =
-        widget.controller.timer.fetchEnded.listen((final _) async => onEnded());
-  }
-
-  @override
-  Future<void> dispose() async {
-    await _rawTimeSubscription?.cancel();
-    await _endedSubscription?.cancel();
-    widget.controller.removeListener(_controllerListener);
-    super.dispose();
+    widget.controller.timer.fetchEnded.listen((final _) => onEnded());
   }
 
   bool _shouldUpdate() {

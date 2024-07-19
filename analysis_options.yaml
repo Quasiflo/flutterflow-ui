@@ -6,3 +6,8 @@ linter:
     diagnostic_describe_all_properties: false
     avoid_positional_boolean_parameters: false # Avoid causing incompatibilites with FlutterFlow
     unnecessary_lambdas: false # Incorrectly fixes things in flutterflow generated pages. Use this in your projects too
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"

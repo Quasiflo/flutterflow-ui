@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:io';
-import './structures.dart';
 import './utils.dart';
 import 'merge.dart';
 

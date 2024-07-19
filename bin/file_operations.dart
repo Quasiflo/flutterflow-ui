@@ -146,7 +146,9 @@ String findAndReplace(
       );
     } else {
       resultCode = resultCode.replaceAll(
-          RegExp.escape(replacement.target), replacement.replacement);
+        RegExp.escape(replacement.target),
+        replacement.replacement,
+      );
     }
   }
 
