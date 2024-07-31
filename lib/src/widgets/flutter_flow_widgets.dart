@@ -21,5 +21,6 @@ export 'flutter_flow_static_map.dart';
 export 'flutter_flow_swipeable_stack.dart';
 export 'flutter_flow_timer.dart';
 export 'flutter_flow_toggle_icon.dart';
+export 'flutter_flow_video_player.dart';
 export 'flutter_flow_web_view.dart';
 export 'keep_alive_wrapper.dart';
